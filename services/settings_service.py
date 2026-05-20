@@ -43,15 +43,47 @@ def get_available_cameras() -> list[str]:
 
 # ── 搜尋 API ──
 def search_weather_location(query: str) -> list[dict]:
-    """搜尋城市名稱 (使用 Open-Meteo Geocoding)"""
+    """搜尋城市名稱 (使用 OpenStreetMap Nominatim)"""
     if not query.strip(): return []
     try:
         resp = requests.get(
-            "https://geocoding-api.open-meteo.com/v1/search",
-            params={"name": query, "count": 10, "language": "zh", "format": "json"},
+            "https://nominatim.openstreetmap.org/search",
+            params={"q": query, "format": "json", "accept-language": "zh-TW", "limit": 10, "addressdetails": 1},
+            headers={"User-Agent": "EntrywaySmartHub/1.0"},
             timeout=5
         ).json()
-        return [{"name": r.get("name"), "lat": r.get("latitude"), "lon": r.get("longitude")} for r in resp.get("results", [])]
+        
+        results = []
+        seen_names = set()
+        for r in resp:
+            addr = r.get("address", {})
+            city_or_county = addr.get("city") or addr.get("county") or addr.get("state") or ""
+            district = addr.get("suburb") or addr.get("town") or addr.get("village") or addr.get("city_district") or addr.get("district") or ""
+            
+            # 建立乾淨的名稱
+            if city_or_county and district:
+                if district in city_or_county:
+                    name = city_or_county
+                elif city_or_county in district:
+                    name = district
+                else:
+                    name = f"{city_or_county}{district}"
+            else:
+                name = city_or_county or district or r.get("display_name").split(",")[0]
+            
+            # 若非台灣地區則標記國家
+            country = addr.get("country", "")
+            if country and country != "臺灣":
+                name = f"{name} ({country})"
+                
+            if name and name not in seen_names:
+                seen_names.add(name)
+                results.append({
+                    "name": name,
+                    "lat": float(r.get("lat")),
+                    "lon": float(r.get("lon"))
+                })
+        return results
     except Exception:
         return []
 
@@ -59,8 +91,15 @@ def search_youbike_stations(query: str) -> list[dict]:
     """搜尋 YouBike 站點"""
     if not query.strip(): return []
     try:
-        stations = requests.get("https://tcgbusfs.blob.core.windows.net/dotapp/youbike/v2/youbike_immediate.json", timeout=5).json()
+        stations = requests.get("https://apis.youbike.com.tw/json/station-min-yb2.json", timeout=5).json()
         q = query.lower()
-        return [{"sno": s.get("sno"), "sna": s.get("sna"), "sarea": s.get("sarea")} for s in stations if q in s.get("sna", "").lower()][:20]
+        return [
+            {
+                "sno": s.get("station_no"),
+                "sna": s.get("name_tw"),
+                "sarea": s.get("district_tw")
+            }
+            for s in stations if q in s.get("name_tw", "").lower()
+        ][:20]
     except Exception:
         return []

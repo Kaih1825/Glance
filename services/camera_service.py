@@ -26,8 +26,8 @@ class CameraService:
         self._state = state
         self._stop_event = threading.Event()
         self._thread = threading.Thread(target=self._loop, daemon=True)
-        self._cascade = cv2.CascadeClassifier(_CASCADE_PATH)
-        self._cap = None
+        self._cascade = cv2.CascadeClassifier(_CASCADE_PATH) # opencv 的人臉偵測器
+        self._cap = None  # Camera Instance
         self._last_face_time = 0.0
         self._needs_reconnect = False
         self._preview_idx: int | None = None
@@ -101,7 +101,10 @@ class CameraService:
                 # ── 預覽模式 ──
                 if self._preview_idx is not None:
                     import base64
-                    small = cv2.resize(frame, (320, 240))
+                    h, w = frame.shape[:2]
+                    target_w = 320
+                    target_h = int(h * (target_w / w))
+                    small = cv2.resize(frame, (target_w, target_h))
                     _, buffer = cv2.imencode('.jpg', small, [cv2.IMWRITE_JPEG_QUALITY, 50])
                     b64 = base64.b64encode(buffer).decode('utf-8')
                     self._state.preview_frame.emit("data:image/jpeg;base64," + b64)

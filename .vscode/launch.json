@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run main.py",
+      "type": "debugpy", // 如果你的 Python 擴充套件較舊，這裡請改為 "python"
+      "request": "launch",
+      "program": "${workspaceFolder}/main.py", // 指定執行 main.py
+      "console": "integratedTerminal", // 在內建終端機顯示結果
+      "justMyCode": true
+    }
+  ]
+}

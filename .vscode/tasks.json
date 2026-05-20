@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run UV",
+      "type": "shell",
+      "command": "uv run main.py",
+      "group": {
+        "kind": "build",
+        "isDefault": true // 設為該專案的預設執行任務
+      },
+      "presentation": {
+        "reveal": "always",
+        "clear": true
+      }
+    }
+  ]
+}

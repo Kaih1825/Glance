@@ -91,6 +91,32 @@ ApplicationWindow {
                 }
                 onClicked: backend.toggle_demo()
             }
+
+            RoundButton {
+                id: registerButton
+                width: 52
+                height: 52
+                scale: pressed ? 0.9 : 1.0
+                anchors.horizontalCenter: parent.horizontalCenter
+                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                
+                contentItem: Item {
+                    Text {
+                        text: "+"
+                        font.pixelSize: 28
+                        color: "#FFFFFF"
+                        anchors.centerIn: parent
+                        anchors.verticalCenterOffset: -3
+                    }
+                }
+
+                background: Rectangle {
+                    radius: width / 2
+                    color: parent.pressed ? "#66FFFFFF" : (parent.hovered ? "#4CFFFFFF" : "#33FFFFFF")
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+                onClicked: openRegisterDialog()
+            }
         }
     }
 
