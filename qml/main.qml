@@ -63,7 +63,7 @@ ApplicationWindow {
 
         Row {
             anchors.left: parent.left
-            anchors.bottom: parent.bottom
+            anchors.top: parent.top
             anchors.margins: 32
             spacing: 16
 
@@ -205,15 +205,35 @@ ApplicationWindow {
 
     SequentialAnimation {
         id: openAnimation
-        ScriptAction { script: { rightPanel.isOpened = true; } }
-        PauseAnimation { duration: 600 }
-        ScriptAction { script: { leftPanel.isYoubikeOpened = true; } }
+        ScriptAction {
+            script: {
+                rightPanel.isOpened = true;
+            }
+        }
+        PauseAnimation {
+            duration: 600
+        }
+        ScriptAction {
+            script: {
+                leftPanel.isYoubikeOpened = true;
+            }
+        }
     }
 
     SequentialAnimation {
         id: closeAnimation
-        ScriptAction { script: { leftPanel.isYoubikeOpened = false; } }
-        PauseAnimation { duration: 400 } // 等待 YouBike 的 400ms 收合動畫
-        ScriptAction { script: { rightPanel.isOpened = false; } }
+        ScriptAction {
+            script: {
+                leftPanel.isYoubikeOpened = false;
+            }
+        }
+        PauseAnimation {
+            duration: 400
+        } // 等待 YouBike 的 400ms 收合動畫
+        ScriptAction {
+            script: {
+                rightPanel.isOpened = false;
+            }
+        }
     }
 }

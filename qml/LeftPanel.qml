@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 
 Item {
     id: leftPanelRoot
@@ -13,38 +14,48 @@ Item {
 
     readonly property real panelSpacing: Math.min(10, leftPanelRoot.height * 0.018)
 
-    // Clock + Weather 保持垂直置中，YouBike 展開時不移動
-    Column {
-        id: topSection
-        width: parent.width * 0.9
+    // ClockWidget 保持在上方，固定不滾動
+    ClockWidget {
+        id: clockWidget
+        anchors.verticalCenter: parent.top
+        anchors.verticalCenterOffset: leftPanelRoot.height * 0.3
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: leftPanelRoot.panelSpacing
-
-        ClockWidget {
-            anchors.horizontalCenter: parent.horizontalCenter
-            parentHeight: leftPanelRoot.height
-        }
-
-        WeatherWidget {
-            id: weatherWidget
-            anchors.horizontalCenter: parent.horizontalCenter
-            availableWidth: parent.width
-            targetAvailableWidth: leftPanelRoot.isRightPanelOpened
-                ? leftPanelRoot.targetWidth * 0.9
-                : Math.min(leftPanelRoot.targetWidth * 0.9, 340)
-        }
+        parentHeight: leftPanelRoot.height
     }
 
-    // YouBike 固定在 topSection 下方，向下展開
-    YouBikeWidget {
-        id: youbikeWidget
-        anchors.top: topSection.bottom
+    // ScrollView 包裹 WeatherWidget 和 YouBikeWidget，使其可一起滾動
+    ScrollView {
+        id: contentScrollView
+        anchors.top: clockWidget.bottom
         anchors.topMargin: leftPanelRoot.panelSpacing
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: leftPanelRoot.panelSpacing
         anchors.horizontalCenter: parent.horizontalCenter
-        availableWidth: parent.width * 0.9
-        targetAvailableWidth: leftPanelRoot.targetWidth * 0.9
-        isRightPanelOpened: leftPanelRoot.isRightPanelOpened
-        maxHeight: leftPanelRoot.isYoubikeOpened ? leftPanelRoot.height * 0.45 : 0
+        width: parent.width
+        clip: true
+
+        ScrollBar.vertical.policy: ScrollBar.AsNeeded
+        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+        Column {
+            width: contentScrollView.width
+            spacing: leftPanelRoot.panelSpacing
+
+            WeatherWidget {
+                id: weatherWidget
+                anchors.horizontalCenter: parent.horizontalCenter
+                availableWidth: parent.width * 0.95
+                targetAvailableWidth: Math.min(leftPanelRoot.targetWidth * 0.95, 500)
+            }
+
+            YouBikeWidget {
+                id: youbikeWidget
+                anchors.horizontalCenter: parent.horizontalCenter
+                availableWidth: parent.width * 0.95
+                targetAvailableWidth: leftPanelRoot.targetWidth * 0.95
+                isRightPanelOpened: leftPanelRoot.isRightPanelOpened
+                maxHeight: leftPanelRoot.isYoubikeOpened ? leftPanelRoot.height * 0.45 : 0
+            }
+        }
     }
 }

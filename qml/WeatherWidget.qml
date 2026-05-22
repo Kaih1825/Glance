@@ -7,15 +7,7 @@ Grid {
     spacing: 6
     property real availableWidth: 600
     property real targetAvailableWidth: availableWidth
-    property real minCardWidth: 150
-
-    move: Transition {
-        NumberAnimation {
-            properties: "x,y"
-            duration: 600
-            easing.type: Easing.OutCubic
-        }
-    }
+    property real minCardWidth: 180
 
     columns: {
         var maxCols = Math.max(1, Math.floor((targetAvailableWidth + spacing) / (minCardWidth + spacing)));
@@ -72,12 +64,14 @@ Grid {
                             font.weight: Font.Medium
                             Layout.fillWidth: true
                             elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
                         }
                         Text {
                             text: (modelData.temp || "--") + "°C"
                             color: "white"
                             font.pixelSize: 14
                             font.weight: Font.Medium
+                            verticalAlignment: Text.AlignVCenter
                         }
                     }
 
@@ -90,12 +84,16 @@ Grid {
                             color: "#89FFFFFF"
                             font.pixelSize: 11
                             Layout.fillWidth: true
+                            fontSizeMode: width > 0 ? Text.HorizontalFit : Text.FixedSize
+                            minimumPixelSize: 8
                             elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
                         }
                         Text {
                             text: (modelData.wind_speed || "--") + " km/h"
                             color: "#60FFFFFF"
                             font.pixelSize: 11
+                            verticalAlignment: Text.AlignVCenter
                         }
                     }
                 }

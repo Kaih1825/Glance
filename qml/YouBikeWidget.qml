@@ -52,6 +52,7 @@ Flickable {
                 width: grid.cardWidth
                 height: 50
                 radius: 12
+                
 
                 RowLayout {
                     anchors.fill: parent
