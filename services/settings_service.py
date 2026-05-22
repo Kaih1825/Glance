@@ -16,10 +16,34 @@ def set_weather_locations(locations: list[dict]):
 
 # ── YouBike設定 ──
 def get_youbike_stations() -> list[dict]:
-    return get_setting("youbike_stations", [])[:2]
+    data = get_setting("youbike_stations", [])[:2]
+    if not data:
+        return []
+    
+    # 兼容舊格式：如果存的是完整的字典列表，直接回傳
+    if isinstance(data[0], dict):
+        return data
+        
+    # 如果是新格式（只存 ID 列表），向官方站點清單 API 查詢完整資訊
+    try:
+        resp = requests.get("https://apis.youbike.com.tw/json/station-min-yb2.json", timeout=5).json()
+        stations_map = {
+            s.get("station_no"): {
+                "sno": s.get("station_no"),
+                "sna": s.get("name_tw"),
+                "sarea": s.get("district_tw")
+            }
+            for s in resp
+        }
+        return [stations_map[sno] for sno in data if sno in stations_map]
+    except Exception:
+        # 發生錯誤時的降級處理，至少保留 sno 資訊
+        return [{"sno": sno, "sna": sno, "sarea": ""} for sno in data]
 
 def set_youbike_stations(stations: list[dict]):
-    set_setting("youbike_stations", stations[:2])
+    # 只儲存站點 ID (sno)
+    sno_list = [s.get("sno") for s in stations if s.get("sno")]
+    set_setting("youbike_stations", sno_list[:2])
 
 # ── 攝影機設定 ──
 def get_camera_index() -> int:

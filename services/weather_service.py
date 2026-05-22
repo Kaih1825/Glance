@@ -7,13 +7,19 @@ from services.settings_service import get_weather_locations
 
 _WEATHER_API = "https://api.open-meteo.com/v1/forecast"
 
-# 簡單的 WMO 天氣代碼對應表 (Emoji, 中文描述)
+# 簡單的 WMO 天氣代碼對應表 (Icon Codepoint, 中文描述, 顏色)
 _WMO_MAP = {
-    0: ("☀️", "晴天"),
-    1: ("🌤️", "大致晴朗"), 2: ("⛅", "多雲"), 3: ("☁️", "陰天"),
-    45: ("🌫️", "起霧"), 51: ("🌦️", "毛毛雨"), 61: ("🌧️", "小雨"),
-    63: ("🌧️", "中雨"), 65: ("🌧️", "大雨"), 80: ("🌦️", "陣雨"),
-    95: ("⛈️", "雷雨")
+    0: ("\ue430", "晴天", "#FFB74D"),       # wb_sunny
+    1: ("\ue42d", "大致晴朗", "#B0BEC5"), # wb_cloudy
+    2: ("\ue2c2", "多雲", "#90A4AE"),       # cloud
+    3: ("\ue2c2", "陰天", "#78909C"),       # cloud
+    45: ("\ue2c2", "起霧", "#B0BEC5"),      # fog / cloud
+    51: ("\ue3e5", "毛毛雨", "#4FC3F7"),    # grain
+    61: ("\ue3e5", "小雨", "#29B6F6"),       # grain
+    63: ("\ue3e5", "中雨", "#039BE5"),       # grain
+    65: ("\ue3e5", "大雨", "#0288D1"),       # grain
+    80: ("\ue3e5", "陣雨", "#29B6F6"),       # grain
+    95: ("\ue3e7", "雷雨", "#BA68C8")        # flash_on / thunderstorm
 }
 
 # 預設地點（當使用者沒有設定時使用）
@@ -41,23 +47,25 @@ def fetch_weather() -> list[dict]:
             
             # 解析天氣代碼，若找不到對應則顯示未知
             code = int(data.get("weathercode", 0))
-            emoji, condition = _WMO_MAP.get(code, ("🌡️", "未知"))
+            icon, condition, color = _WMO_MAP.get(code, ("\ue8e3", "未知", "#E57373"))
             
             results.append({
                 "name": loc["name"],
                 "temp": round(data.get("temperature_2m", 0), 1),
                 "feels_like": round(data.get("apparent_temperature", 0), 1),
-                "emoji": emoji,
+                "icon": icon,
+                "iconColor": color,
                 "condition": condition,
                 "humidity": int(data.get("relativehumidity_2m", 0)),
                 "wind_speed": round(data.get("windspeed_10m", 0), 1),
             })
-        except Exception:
+        except Exception as e:
+            print(e)
             # 發生錯誤時給予預設佔位內容
             results.append({
                 "name": loc.get("name", "未知地點"),
                 "temp": "--", "feels_like": "--",
-                "emoji": "❓", "condition": "無法取得資料",
+                "icon": "\ue887", "iconColor": "#E57373", "condition": "無法取得資料",
                 "humidity": "--", "wind_speed": "--",
             })
             

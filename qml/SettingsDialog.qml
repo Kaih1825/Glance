@@ -4,25 +4,49 @@ import QtQuick.Layouts
 
 Popup {
     id: root
-    width: 520
-    height: 640
+    width: parent.width * 0.5
+    height: parent.height * 0.9
     modal: true
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    
+
     enter: Transition {
         ParallelAnimation {
-            NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 400; easing.type: Easing.OutQuint }
-            NumberAnimation { property: "scale"; from: 0.9; to: 1.0; duration: 400; easing.type: Easing.OutQuint }
+            NumberAnimation {
+                property: "opacity"
+                from: 0.0
+                to: 1.0
+                duration: 400
+                easing.type: Easing.OutQuint
+            }
+            NumberAnimation {
+                property: "scale"
+                from: 0.9
+                to: 1.0
+                duration: 400
+                easing.type: Easing.OutQuint
+            }
         }
     }
     exit: Transition {
         ParallelAnimation {
-            NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: 250; easing.type: Easing.OutCubic }
-            NumberAnimation { property: "scale"; from: 1.0; to: 0.95; duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation {
+                property: "opacity"
+                from: 1.0
+                to: 0.0
+                duration: 250
+                easing.type: Easing.OutCubic
+            }
+            NumberAnimation {
+                property: "scale"
+                from: 1.0
+                to: 0.95
+                duration: 250
+                easing.type: Easing.OutCubic
+            }
         }
     }
-    
+
     background: Rectangle {
         color: "#E6000000"
         radius: 24
@@ -32,52 +56,52 @@ Popup {
     Overlay.modal: Rectangle {
         color: "transparent"
     }
-    
+
     property var weatherLocations: []
     property var youbikeStations: []
     property int cameraIndex: 0
     property var cameraOptions: []
-    
+
     function openSettings() {
-        backend.load_settings()
-        root.open()
-        backend.test_camera(cameraIndex)
+        backend.load_settings();
+        root.open();
+        backend.test_camera(cameraIndex);
     }
-    
+
     onClosed: {
-        backend.stop_test_camera()
+        backend.stop_test_camera();
     }
-    
+
     Connections {
         target: backend
         function onSettingsLoaded(w, y, cIdx, cams) {
-            weatherLocations = w
-            youbikeStations = y
-            cameraIndex = cIdx
-            cameraOptions = cams
-            camComboBox.currentIndex = cIdx
-            weatherSearchRepeater.model = []
-            bikeSearchRepeater.model = []
+            weatherLocations = w;
+            youbikeStations = y;
+            cameraIndex = cIdx;
+            cameraOptions = cams;
+            camComboBox.currentIndex = cIdx;
+            weatherSearchRepeater.model = [];
+            bikeSearchRepeater.model = [];
         }
-        
+
         function onPreviewFrame(b64) {
-            camPreview.source = b64
+            camPreview.source = b64;
         }
-        
+
         function onWeatherSearchResults(res) {
-            weatherSearchRepeater.model = res
+            weatherSearchRepeater.model = res;
         }
-        
+
         function onYoubikeSearchResults(res) {
-            bikeSearchRepeater.model = res
+            bikeSearchRepeater.model = res;
         }
     }
-    
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 32
         spacing: 16
-        
+
         // Header
         RowLayout {
             Layout.fillWidth: true
@@ -92,32 +116,56 @@ Popup {
                 text: "✕"
                 onClicked: root.close()
                 background: null
-                contentItem: Text { text: parent.text; color: "#89FFFFFF" }
+                contentItem: Text {
+                    text: parent.text
+                    color: "#89FFFFFF"
+                }
             }
         }
-        
-        Rectangle { Layout.fillWidth: true; height: 1; color: "#1EFFFFFF" }
-        
+
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: "#1EFFFFFF"
+        }
+
         ScrollView {
+            id: settingsScrollView
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            
+
             ColumnLayout {
-                width: parent.width
+                width: settingsScrollView.width
                 spacing: 16
-                
+
                 // Camera
                 ColumnLayout {
                     spacing: 4
-                    Text { text: "📷 攝影機選擇"; color: "#B2FFFFFF"; font.pixelSize: 14; font.weight: Font.DemiBold }
+                    RowLayout {
+                        spacing: 6
+                        Text {
+                            text: "\ue412" // photo_camera
+                            font.family: "Material Icons"
+                            font.pixelSize: 18
+                            color: "#B2FFFFFF"
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        Text {
+                            text: "攝影機選擇"
+                            color: "#B2FFFFFF"
+                            font.pixelSize: 14
+                            font.weight: Font.DemiBold
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
                     ComboBox {
                         id: camComboBox
                         Layout.fillWidth: true
                         model: cameraOptions
-                        onActivated: (index) => {
-                            cameraIndex = index
-                            backend.test_camera(index)
+                        onActivated: index => {
+                            cameraIndex = index;
+                            backend.test_camera(index);
                         }
                     }
                     Image {
@@ -129,15 +177,39 @@ Popup {
                         source: ""
                     }
                 }
-                
-                Rectangle { Layout.fillWidth: true; height: 1; color: "#1EFFFFFF" }
-                
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: "#1EFFFFFF"
+                }
+
                 // Weather
                 ColumnLayout {
                     spacing: 4
-                    Text { text: "🌤 天氣位置"; color: "#B2FFFFFF"; font.pixelSize: 14; font.weight: Font.DemiBold }
-                    Text { text: "最多 2 個位置"; color: "#60FFFFFF"; font.pixelSize: 12 }
-                    
+                    RowLayout {
+                        spacing: 6
+                        Text {
+                            text: "\ue430" // wb_sunny
+                            font.family: "Material Icons"
+                            font.pixelSize: 18
+                            color: "#B2FFFFFF"
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        Text {
+                            text: "天氣位置"
+                            color: "#B2FFFFFF"
+                            font.pixelSize: 14
+                            font.weight: Font.DemiBold
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                    Text {
+                        text: "最多 2 個位置"
+                        color: "#60FFFFFF"
+                        font.pixelSize: 12
+                    }
+
                     // Chips
                     Row {
                         spacing: 6
@@ -146,16 +218,23 @@ Popup {
                             Button {
                                 text: modelData.name + ", " + (modelData.country || "") + "  ✕"
                                 onClicked: {
-                                    var arr = weatherLocations.slice()
-                                    arr.splice(index, 1)
-                                    weatherLocations = arr
+                                    var arr = weatherLocations.slice();
+                                    arr.splice(index, 1);
+                                    weatherLocations = arr;
                                 }
-                                background: Rectangle { color: "#662196F3"; radius: 10 }
-                                contentItem: Text { text: parent.text; color: "white"; padding: 4 }
+                                background: Rectangle {
+                                    color: "#662196F3"
+                                    radius: 10
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    padding: 4
+                                }
                             }
                         }
                     }
-                    
+
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 8
@@ -171,14 +250,14 @@ Popup {
                             onClicked: backend.search_weather(wSearchInput.text)
                         }
                     }
-                    
+
                     Rectangle {
                         Layout.fillWidth: true
                         height: 110
                         color: "#0CFFFFFF"
                         radius: 8
                         clip: true
-                        
+
                         ListView {
                             anchors.fill: parent
                             anchors.margins: 6
@@ -187,36 +266,68 @@ Popup {
                                 width: ListView.view.width
                                 height: 30
                                 text: modelData.name + ", " + (modelData.admin1 || "") + " " + (modelData.country || "")
-                                contentItem: Text { text: parent.text; color: "white"; verticalAlignment: Text.AlignVCenter }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    verticalAlignment: Text.AlignVCenter
+                                }
                                 background: null
                                 onClicked: {
                                     if (weatherLocations.length < 2) {
-                                        var exists = false
-                                        for(var i=0; i<weatherLocations.length; i++) {
-                                            if (weatherLocations[i].lat === modelData.lat && weatherLocations[i].lon === modelData.lon) exists = true
+                                        var exists = false;
+                                        for (var i = 0; i < weatherLocations.length; i++) {
+                                            if (weatherLocations[i].lat === modelData.lat && weatherLocations[i].lon === modelData.lon)
+                                                exists = true;
                                         }
                                         if (!exists) {
-                                            var arr = weatherLocations.slice()
-                                            arr.push(modelData)
-                                            weatherLocations = arr
+                                            var arr = weatherLocations.slice();
+                                            arr.push(modelData);
+                                            weatherLocations = arr;
                                         }
                                     }
                                 }
                             }
                         }
-                        
-                        Repeater { id: weatherSearchRepeater; model: [] } // just to hold data
+
+                        Repeater {
+                            id: weatherSearchRepeater
+                            model: []
+                        } // just to hold data
                     }
                 }
-                
-                Rectangle { Layout.fillWidth: true; height: 1; color: "#1EFFFFFF" }
-                
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: "#1EFFFFFF"
+                }
+
                 // YouBike
                 ColumnLayout {
                     spacing: 4
-                    Text { text: "🚲 YouBike 站點"; color: "#B2FFFFFF"; font.pixelSize: 14; font.weight: Font.DemiBold }
-                    Text { text: "最多 2 個站點"; color: "#60FFFFFF"; font.pixelSize: 12 }
-                    
+                    RowLayout {
+                        spacing: 6
+                        Text {
+                            text: "\ue52f" // directions_bike
+                            font.family: "Material Icons"
+                            font.pixelSize: 18
+                            color: "#B2FFFFFF"
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        Text {
+                            text: "YouBike 站點"
+                            color: "#B2FFFFFF"
+                            font.pixelSize: 14
+                            font.weight: Font.DemiBold
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                    Text {
+                        text: "最多 2 個站點"
+                        color: "#60FFFFFF"
+                        font.pixelSize: 12
+                    }
+
                     Row {
                         spacing: 6
                         Repeater {
@@ -224,16 +335,23 @@ Popup {
                             Button {
                                 text: modelData.sna + "  ✕"
                                 onClicked: {
-                                    var arr = youbikeStations.slice()
-                                    arr.splice(index, 1)
-                                    youbikeStations = arr
+                                    var arr = youbikeStations.slice();
+                                    arr.splice(index, 1);
+                                    youbikeStations = arr;
                                 }
-                                background: Rectangle { color: "#664CAF50"; radius: 10 }
-                                contentItem: Text { text: parent.text; color: "white"; padding: 4 }
+                                background: Rectangle {
+                                    color: "#664CAF50"
+                                    radius: 10
+                                }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    padding: 4
+                                }
                             }
                         }
                     }
-                    
+
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 8
@@ -249,14 +367,14 @@ Popup {
                             onClicked: backend.search_youbike(bSearchInput.text)
                         }
                     }
-                    
+
                     Rectangle {
                         Layout.fillWidth: true
                         height: 110
                         color: "#0CFFFFFF"
                         radius: 8
                         clip: true
-                        
+
                         ListView {
                             anchors.fill: parent
                             anchors.margins: 6
@@ -265,38 +383,86 @@ Popup {
                                 width: ListView.view.width
                                 height: 30
                                 text: modelData.sna + "  " + (modelData.sarea || "")
-                                contentItem: Text { text: parent.text; color: "white"; verticalAlignment: Text.AlignVCenter }
+                                contentItem: Text {
+                                    text: parent.text
+                                    color: "white"
+                                    verticalAlignment: Text.AlignVCenter
+                                }
                                 background: null
                                 onClicked: {
                                     if (youbikeStations.length < 2) {
-                                        var exists = false
-                                        for(var i=0; i<youbikeStations.length; i++) {
-                                            if (youbikeStations[i].sno === modelData.sno) exists = true
+                                        var exists = false;
+                                        for (var i = 0; i < youbikeStations.length; i++) {
+                                            if (youbikeStations[i].sno === modelData.sno)
+                                                exists = true;
                                         }
                                         if (!exists) {
-                                            var arr = youbikeStations.slice()
-                                            arr.push(modelData)
-                                            youbikeStations = arr
+                                            var arr = youbikeStations.slice();
+                                            arr.push(modelData);
+                                            youbikeStations = arr;
                                         }
                                     }
                                 }
                             }
                         }
-                        
-                        Repeater { id: bikeSearchRepeater; model: [] } // just to hold data
+
+                        Repeater {
+                            id: bikeSearchRepeater
+                            model: []
+                        } // just to hold data
                     }
                 }
             }
         }
-        
+
         Button {
-            text: "💾  儲存設定"
+            id: saveSettingsButton
+            property real buttonScale: 1.0
             Layout.fillWidth: true
-            background: Rectangle { color: "#64B5F6"; radius: 8 }
-            contentItem: Text { text: parent.text; color: "black"; horizontalAlignment: Text.AlignHCenter; padding: 10; font.pixelSize: 14 }
+            padding: 10
+            scale: buttonScale
+            Behavior on buttonScale {
+                NumberAnimation {
+                    easing.type: Easing.OutBack
+                    duration: 500
+                }
+            }
+            onHoveredChanged: {
+                if (hovered)
+                    buttonScale = 1.025;
+                else
+                    buttonScale = 1;
+            }
+            background: Rectangle {
+                color: "#64B5F6"
+                radius: 30
+            }
+            contentItem: RowLayout {
+                spacing: 8
+                Item {
+                    Layout.fillWidth: true
+                }
+                Text {
+                    text: "\ue161" // save
+                    font.family: "Material Icons"
+                    font.pixelSize: 18
+                    color: "black"
+                    verticalAlignment: Text.AlignVCenter
+                }
+                Text {
+                    text: "儲存設定"
+                    font.pixelSize: 14
+                    font.weight: Font.Medium
+                    color: "black"
+                    verticalAlignment: Text.AlignVCenter
+                }
+                Item {
+                    Layout.fillWidth: true
+                }
+            }
             onClicked: {
-                backend.save_settings(weatherLocations, youbikeStations, cameraIndex)
-                root.close()
+                backend.save_settings(weatherLocations, youbikeStations, cameraIndex);
+                root.close();
             }
         }
     }

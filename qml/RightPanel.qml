@@ -8,16 +8,21 @@ Rectangle {
     border.width: 1
     radius: 24
     
-    property bool showRebuilding: false
+    property string welcomeMessage: "歡迎"
+    property bool showWave: false
     
     function setupUser(mode, users) {
         if (users && users.length > 0) {
-            welcomeText.text = "歡迎回來，" + users.join("、") + " 👋"
+            welcomeMessage = "歡迎回來，" + users.join("、")
+            showWave = true
         } else {
-            welcomeText.text = "歡迎訪客 👋"
+            welcomeMessage = "歡迎訪客"
+            showWave = true
         }
     }
     
+    property bool showRebuilding: false
+
     StackLayout {
         anchors.fill: parent
         anchors.margins: 32
@@ -27,13 +32,26 @@ Rectangle {
         ColumnLayout {
             spacing: 0
             
-            Text {
-                id: welcomeText
-                text: "歡迎"
-                color: "white"
-                font.pixelSize: 22
-                font.weight: Font.Light
+            RowLayout {
                 Layout.topMargin: 4
+                spacing: 8
+                
+                Text {
+                    id: welcomeText
+                    text: welcomeMessage
+                    color: "white"
+                    font.pixelSize: 22
+                    font.weight: Font.Light
+                }
+                
+                Text {
+                    text: "\ue766" // waving_hand
+                    font.family: "Material Icons"
+                    font.pixelSize: 22
+                    color: "#FFD54F" // gold/yellow
+                    visible: showWave
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
             
             Rectangle {
@@ -79,17 +97,29 @@ Rectangle {
                 }
                 
                 Button {
-                    text: "➕ 註冊新人員"
+                    id: registerNewUserButton
                     onClicked: openRegisterDialog()
                     background: Rectangle {
                         color: parent.pressed ? "#4CFFFFFF" : "#33FFFFFF"
                         radius: 8
                     }
-                    contentItem: Text {
-                        text: parent.text
-                        color: "white"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
+                    contentItem: RowLayout {
+                        spacing: 6
+                        Item { Layout.fillWidth: true }
+                        Text {
+                            text: "\ue7fe" // person_add
+                            font.family: "Material Icons"
+                            font.pixelSize: 16
+                            color: "white"
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        Text {
+                            text: "註冊新人員"
+                            color: "white"
+                            font.pixelSize: 13
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        Item { Layout.fillWidth: true }
                     }
                     padding: 8
                 }

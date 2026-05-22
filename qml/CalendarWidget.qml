@@ -13,12 +13,13 @@ ColumnLayout {
     }
     
     ScrollView {
+        id: calendarScrollView
         Layout.fillWidth: true
         Layout.preferredHeight: 180
         clip: true
         
         Column {
-            width: parent.width
+            width: calendarScrollView.width
             spacing: 6
             
             Text {
@@ -48,12 +49,16 @@ ColumnLayout {
                         Text {
                             text: {
                                 var vis = modelData.visibility || "public"
-                                if (vis === "private") return "🔒"
-                                if (vis === "shared") return "👥"
-                                return "🌐"
+                                if (vis === "private") return "\ue897" // lock
+                                if (vis === "shared") return "\ue7fb"  // people
+                                return "\ue80b"                      // public
                             }
-                            font.pixelSize: 16
+                            font.family: "Material Icons"
+                            font.pixelSize: 20
+                            color: "#89FFFFFF"
                             Layout.preferredWidth: 28
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
                         
                         Column {

@@ -44,11 +44,22 @@ Popup {
         anchors.margins: 32
         spacing: 16
         
-        Text {
-            text: "➕ 註冊新人員"
-            color: "white"
-            font.pixelSize: 16
-            font.weight: Font.DemiBold
+        RowLayout {
+            spacing: 6
+            Text {
+                text: "\ue7fe" // person_add
+                font.family: "Material Icons"
+                font.pixelSize: 20
+                color: "white"
+                verticalAlignment: Text.AlignVCenter
+            }
+            Text {
+                text: "註冊新人員"
+                color: "white"
+                font.pixelSize: 16
+                font.weight: Font.DemiBold
+                verticalAlignment: Text.AlignVCenter
+            }
         }
         
         Text {
