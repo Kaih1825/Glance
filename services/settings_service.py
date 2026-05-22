@@ -2,6 +2,8 @@
 services/settings_service.py
 封裝所有設定相關的邏輯，包含讀取天氣、YouBike、相機設定，以及處理搜尋 API。
 """
+import os
+import json
 import requests
 import subprocess
 import platform
@@ -9,41 +11,83 @@ from services.database import get_setting, set_setting
 
 # ── 天氣設定 ──
 def get_weather_locations() -> list[dict]:
-    return get_setting("weather_locations", [])[:2]
+    return get_setting("weather_locations", [])
 
 def set_weather_locations(locations: list[dict]):
-    set_setting("weather_locations", locations[:2])
+    set_setting("weather_locations", locations)
+
+# ── YouBike 站點快取機制 ──
+_CACHE_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "youbike_stations_cache.json")
+_cached_youbike_stations = None
+
+def _fetch_all_youbike_stations() -> list:
+    global _cached_youbike_stations
+    if _cached_youbike_stations:
+        return _cached_youbike_stations
+
+    # 1. 嘗試載入磁碟快取
+    disk_cache = []
+    if os.path.exists(_CACHE_FILE):
+        try:
+            with open(_CACHE_FILE, "r", encoding="utf-8") as f:
+                disk_cache = json.load(f)
+        except Exception as e:
+            print(f"Error loading YouBike disk cache: {e}")
+
+    # 2. 嘗試從 API 更新資料
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        resp = requests.get("https://apis.youbike.com.tw/json/station-min-yb2.json", headers=headers, timeout=5).json()
+        if isinstance(resp, list) and len(resp) > 0:
+            _cached_youbike_stations = resp
+            # 同步更新至磁碟快取
+            try:
+                with open(_CACHE_FILE, "w", encoding="utf-8") as f:
+                    json.dump(resp, f, ensure_ascii=False, indent=2)
+            except Exception as e:
+                print(f"Error saving YouBike disk cache: {e}")
+            return _cached_youbike_stations
+    except Exception as e:
+        print(f"Error fetching YouBike stations from API: {e}. Falling back to cache.")
+
+    # 3. 網路失敗時，若有磁碟快取則使用
+    if disk_cache:
+        _cached_youbike_stations = disk_cache
+        return disk_cache
+
+    return []
 
 # ── YouBike設定 ──
 def get_youbike_stations() -> list[dict]:
-    data = get_setting("youbike_stations", [])[:2]
-    if not data:
-        return []
-    
-    # 兼容舊格式：如果存的是完整的字典列表，直接回傳
-    if isinstance(data[0], dict):
-        return data
-        
-    # 如果是新格式（只存 ID 列表），向官方站點清單 API 查詢完整資訊
-    try:
-        resp = requests.get("https://apis.youbike.com.tw/json/station-min-yb2.json", timeout=5).json()
-        stations_map = {
-            s.get("station_no"): {
-                "sno": s.get("station_no"),
-                "sna": s.get("name_tw"),
-                "sarea": s.get("district_tw")
-            }
-            for s in resp
-        }
-        return [stations_map[sno] for sno in data if sno in stations_map]
-    except Exception:
-        # 發生錯誤時的降級處理，至少保留 sno 資訊
-        return [{"sno": sno, "sna": sno, "sarea": ""} for sno in data]
+    return get_setting("youbike_stations", [])
 
 def set_youbike_stations(stations: list[dict]):
-    # 只儲存站點 ID (sno)
-    sno_list = [s.get("sno") for s in stations if s.get("sno")]
-    set_setting("youbike_stations", sno_list[:2])
+    # 儲存完整的站點字典列表，避免後續載入時重複下載與反查官方 JSON
+    cleaned = []
+    for s in stations:
+        if isinstance(s, dict) and s.get("sno"):
+            cleaned.append({
+                "sno": s.get("sno"),
+                "sna": s.get("sna", s.get("sno")),
+                "sarea": s.get("sarea", "")
+            })
+    set_setting("youbike_stations", cleaned)
+
+def get_default_youbike_stations() -> list[dict]:
+    """取得預設的 YouBike 站點 (Demo 用，取前5個)"""
+    stations = _fetch_all_youbike_stations()
+    if not stations:
+        return []
+    return [
+        {
+            "sno": s.get("station_no"),
+            "sna": s.get("name_tw"),
+            "sarea": s.get("district_tw")
+        }
+        for s in stations[:5]
+    ]
 
 # ── 攝影機設定 ──
 def get_camera_index() -> int:
@@ -115,7 +159,9 @@ def search_youbike_stations(query: str) -> list[dict]:
     """搜尋 YouBike 站點"""
     if not query.strip(): return []
     try:
-        stations = requests.get("https://apis.youbike.com.tw/json/station-min-yb2.json", timeout=5).json()
+        stations = _fetch_all_youbike_stations()
+        if not stations:
+            return []
         q = query.lower()
         return [
             {

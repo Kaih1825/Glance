@@ -4,10 +4,12 @@ import QtQuick.Controls
 Column {
     spacing: 4
     
+    property real parentHeight: 600
+    
     Text {
         id: timeText
         font.family: "monospace"
-        font.pixelSize: 92
+        font.pixelSize: Math.round(Math.min(92, Math.max(50, parentHeight * 0.15)))
         font.weight: Font.Light
         color: "white"
         anchors.horizontalCenter: parent.horizontalCenter
@@ -15,7 +17,7 @@ Column {
     
     Text {
         id: dateText
-        font.pixelSize: 20
+        font.pixelSize: Math.round(Math.min(20, Math.max(14, parentHeight * 0.035)))
         font.weight: Font.Light
         color: "#89FFFFFF"
         anchors.horizontalCenter: parent.horizontalCenter

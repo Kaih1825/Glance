@@ -1,61 +1,102 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 
-Column {
-    spacing: 8
+Grid {
+    id: weatherRoot
+    height: implicitHeight
+    spacing: 6
+    property real availableWidth: 600
+    property real targetAvailableWidth: availableWidth
+    property real minCardWidth: 150
+
+    move: Transition {
+        NumberAnimation {
+            properties: "x,y"
+            duration: 600
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    columns: {
+        var maxCols = Math.max(1, Math.floor((targetAvailableWidth + spacing) / (minCardWidth + spacing)));
+        var itemCount = weatherRepeater.model ? weatherRepeater.model.length : 0;
+        return Math.max(1, Math.min(itemCount > 0 ? itemCount : 1, maxCols));
+    }
+    property real cardWidth: (targetAvailableWidth - (columns - 1) * spacing) / columns
 
     Repeater {
         id: weatherRepeater
         model: []
 
         delegate: Rectangle {
-            property int margin: 20
             color: "#0AFFFFFF"        // 半透明背景 (毛玻璃質感)
             border.color: "#1EFFFFFF"  // 邊框
             border.width: 1
-            width: childrenRect.width + margin
-            height: childrenRect.height + margin
+            width: weatherRoot.cardWidth
+            height: 60
             radius: 12
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: 600
+                    easing.type: Easing.OutCubic
+                }
+            }
+
             RowLayout {
-                spacing: 14
-                x: parent.margin / 2
-                y: parent.margin / 2
+                anchors.fill: parent
+                anchors.margins: 8
+                spacing: 8
+
                 Text {
                     text: modelData.icon || "\ue8e3"
                     font.family: "Material Icons"
-                    font.pixelSize: 36
+                    font.pixelSize: 24
                     color: modelData.iconColor || "white"
                     Layout.alignment: Qt.AlignVCenter
                 }
 
                 Column {
-                    spacing: 2
-                    Row {
+                    Layout.fillWidth: true
+                    spacing: 1
+                    Layout.alignment: Qt.AlignVCenter
+
+                    RowLayout {
+                        width: parent.width
                         spacing: 6
+
                         Text {
-                            text: modelData.name || ""
-                            color: "#89FFFFFF"
-                            font.pixelSize: 13
+                            text: (modelData.name || "") + " (" + (modelData.condition || "") + ")"
+                            color: "white"
+                            font.pixelSize: 12
+                            font.weight: Font.Medium
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
                         }
                         Text {
-                            text: modelData.condition || ""
-                            color: "#89FFFFFF"
-                            font.pixelSize: 13
+                            text: (modelData.temp || "--") + "°C"
+                            color: "white"
+                            font.pixelSize: 14
+                            font.weight: Font.Medium
                         }
                     }
 
-                    Text {
-                        text: (modelData.temp || "--") + "°C"
-                        color: "white"
-                        font.pixelSize: 28
-                        font.weight: Font.Light
-                    }
+                    RowLayout {
+                        width: parent.width
+                        spacing: 6
 
-                    Text {
-                        text: "體感 " + (modelData.feels_like || "--") + "°C　濕度 " + (modelData.humidity || "--") + "%　風速 " + (modelData.wind_speed || "--") + " km/h"
-                        color: "#60FFFFFF"
-                        font.pixelSize: 12
+                        Text {
+                            text: "體感 " + (modelData.feels_like || "--") + "°C · 濕度 " + (modelData.humidity || "--") + "%"
+                            color: "#89FFFFFF"
+                            font.pixelSize: 11
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
+                        }
+                        Text {
+                            text: (modelData.wind_speed || "--") + " km/h"
+                            color: "#60FFFFFF"
+                            font.pixelSize: 11
+                        }
                     }
                 }
             }

@@ -30,7 +30,7 @@ def fetch_weather() -> list[dict]:
     locations = get_weather_locations() or _DEFAULT_LOCATIONS
     results = []
     
-    for loc in locations[:2]: # 最多抓取兩個地點
+    for loc in locations: # 抓取所有設定的地點
         try:
             resp = requests.get(
                 _WEATHER_API,

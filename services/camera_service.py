@@ -108,7 +108,7 @@ class CameraService:
                     _, buffer = cv2.imencode('.jpg', small, [cv2.IMWRITE_JPEG_QUALITY, 50])
                     b64 = base64.b64encode(buffer).decode('utf-8')
                     self._state.preview_frame.emit("data:image/jpeg;base64," + b64)
-                    time.sleep(0.1) # 預覽模式大約 10 FPS
+                    time.sleep(0.03) # 約 30 FPS
                     continue
 
                 # 階段一：使用快速的 OpenCV 偵測是否有人臉

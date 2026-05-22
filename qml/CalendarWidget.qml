@@ -15,7 +15,7 @@ ColumnLayout {
     ScrollView {
         id: calendarScrollView
         Layout.fillWidth: true
-        Layout.preferredHeight: 180
+        Layout.fillHeight: true
         clip: true
         
         Column {

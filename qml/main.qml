@@ -9,10 +9,8 @@ ApplicationWindow {
     height: 600
     title: "玄關智慧中樞"
     color: '#c90d1117'
-    minimumWidth: 1024
-    minimumHeight: 600
-    maximumWidth: 1024
-    maximumHeight: 600
+    minimumWidth: 800
+    minimumHeight: 500
 
     FontLoader {
         id: materialFont
@@ -40,19 +38,21 @@ ApplicationWindow {
             spacing: 40
 
             LeftPanel {
+                id: leftPanel
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                isRightPanelOpened: rightPanel.isOpened
             }
 
             RightPanel {
                 id: rightPanel
-                Layout.preferredWidth: panelWidth
+                Layout.preferredWidth: isOpened ? parent.width * 0.45 : 0
                 Layout.fillHeight: true
                 clip: true
 
-                property int panelWidth: 0
+                property bool isOpened: false
 
-                Behavior on panelWidth {
+                Behavior on Layout.preferredWidth {
                     NumberAnimation {
                         duration: 600
                         easing.type: Easing.OutCubic
@@ -61,7 +61,7 @@ ApplicationWindow {
             }
         }
 
-        Column {
+        Row {
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             anchors.margins: 32
@@ -134,7 +134,6 @@ ApplicationWindow {
                 width: 52
                 height: 52
                 scale: pressed ? 0.9 : 1.0
-                anchors.horizontalCenter: parent.horizontalCenter
                 Behavior on scale {
                     NumberAnimation {
                         duration: 150
@@ -179,10 +178,16 @@ ApplicationWindow {
         target: backend
         function onModeChanged(mode, users) {
             if (mode === "idle") {
-                rightPanel.panelWidth = 0;
+                openAnimation.stop();
+                if (rightPanel.isOpened || leftPanel.isYoubikeOpened) {
+                    closeAnimation.start();
+                }
             } else {
                 rightPanel.setupUser(mode, users);
-                rightPanel.panelWidth = 460;
+                closeAnimation.stop();
+                if (!rightPanel.isOpened || !leftPanel.isYoubikeOpened) {
+                    openAnimation.start();
+                }
             }
         }
         function onRebuildStarted() {
@@ -196,5 +201,19 @@ ApplicationWindow {
 
     function openRegisterDialog() {
         registerDialog.openDialog();
+    }
+
+    SequentialAnimation {
+        id: openAnimation
+        ScriptAction { script: { rightPanel.isOpened = true; } }
+        PauseAnimation { duration: 600 }
+        ScriptAction { script: { leftPanel.isYoubikeOpened = true; } }
+    }
+
+    SequentialAnimation {
+        id: closeAnimation
+        ScriptAction { script: { leftPanel.isYoubikeOpened = false; } }
+        PauseAnimation { duration: 400 } // 等待 YouBike 的 400ms 收合動畫
+        ScriptAction { script: { rightPanel.isOpened = false; } }
     }
 }

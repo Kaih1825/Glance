@@ -4,8 +4,8 @@ import QtQuick.Layouts
 
 Popup {
     id: root
-    width: parent.width * 0.5
-    height: parent.height * 0.9
+    width: Math.min(600, Math.max(480, parent.width * 0.55))
+    height: Math.min(700, Math.max(500, parent.height * 0.9))
     modal: true
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
@@ -59,6 +59,8 @@ Popup {
 
     property var weatherLocations: []
     property var youbikeStations: []
+    property var weatherSearchResults: []
+    property var youbikeSearchResults: []
     property int cameraIndex: 0
     property var cameraOptions: []
 
@@ -80,8 +82,8 @@ Popup {
             cameraIndex = cIdx;
             cameraOptions = cams;
             camComboBox.currentIndex = cIdx;
-            weatherSearchRepeater.model = [];
-            bikeSearchRepeater.model = [];
+            weatherSearchResults = [];
+            youbikeSearchResults = [];
         }
 
         function onPreviewFrame(b64) {
@@ -89,11 +91,15 @@ Popup {
         }
 
         function onWeatherSearchResults(res) {
-            weatherSearchRepeater.model = res;
+            console.log("QML onWeatherSearchResults received:", JSON.stringify(res));
+            root.weatherSearchResults = [];
+            root.weatherSearchResults = res;
         }
 
         function onYoubikeSearchResults(res) {
-            bikeSearchRepeater.model = res;
+            console.log("QML onYoubikeSearchResults received:", JSON.stringify(res));
+            root.youbikeSearchResults = [];
+            root.youbikeSearchResults = res;
         }
     }
 
@@ -171,8 +177,8 @@ Popup {
                     Image {
                         id: camPreview
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 180
-                        fillMode: Image.PreserveAspectCrop
+                        Layout.preferredHeight: Math.min(220, root.height * 0.3)
+                        fillMode: Image.PreserveAspectFit
                         cache: false
                         source: ""
                     }
@@ -204,14 +210,11 @@ Popup {
                             verticalAlignment: Text.AlignVCenter
                         }
                     }
-                    Text {
-                        text: "最多 2 個位置"
-                        color: "#60FFFFFF"
-                        font.pixelSize: 12
-                    }
+
 
                     // Chips
-                    Row {
+                    Flow {
+                        Layout.fillWidth: true
                         spacing: 6
                         Repeater {
                             model: weatherLocations
@@ -252,8 +255,10 @@ Popup {
                     }
 
                     Rectangle {
+                        id: weatherSearchResultsContainer
                         Layout.fillWidth: true
-                        height: 110
+                        Layout.preferredHeight: Math.min(150, root.height * 0.2)
+                        visible: root.weatherSearchResults.length > 0
                         color: "#0CFFFFFF"
                         radius: 8
                         clip: true
@@ -261,38 +266,30 @@ Popup {
                         ListView {
                             anchors.fill: parent
                             anchors.margins: 6
-                            model: weatherSearchRepeater.model
+                            model: root.weatherSearchResults
                             delegate: ItemDelegate {
-                                width: ListView.view.width
+                                width: ListView.view ? ListView.view.width : 0
                                 height: 30
-                                text: modelData.name + ", " + (modelData.admin1 || "") + " " + (modelData.country || "")
                                 contentItem: Text {
-                                    text: parent.text
+                                    text: modelData.name
                                     color: "white"
                                     verticalAlignment: Text.AlignVCenter
                                 }
                                 background: null
                                 onClicked: {
-                                    if (weatherLocations.length < 2) {
-                                        var exists = false;
-                                        for (var i = 0; i < weatherLocations.length; i++) {
-                                            if (weatherLocations[i].lat === modelData.lat && weatherLocations[i].lon === modelData.lon)
-                                                exists = true;
-                                        }
-                                        if (!exists) {
-                                            var arr = weatherLocations.slice();
-                                            arr.push(modelData);
-                                            weatherLocations = arr;
-                                        }
+                                    var exists = false;
+                                    for (var i = 0; i < weatherLocations.length; i++) {
+                                        if (weatherLocations[i].lat === modelData.lat && weatherLocations[i].lon === modelData.lon)
+                                            exists = true;
+                                    }
+                                    if (!exists) {
+                                        var arr = weatherLocations.slice();
+                                        arr.push(modelData);
+                                        weatherLocations = arr;
                                     }
                                 }
                             }
                         }
-
-                        Repeater {
-                            id: weatherSearchRepeater
-                            model: []
-                        } // just to hold data
                     }
                 }
 
@@ -322,13 +319,10 @@ Popup {
                             verticalAlignment: Text.AlignVCenter
                         }
                     }
-                    Text {
-                        text: "最多 2 個站點"
-                        color: "#60FFFFFF"
-                        font.pixelSize: 12
-                    }
 
-                    Row {
+
+                    Flow {
+                        Layout.fillWidth: true
                         spacing: 6
                         Repeater {
                             model: youbikeStations
@@ -369,8 +363,10 @@ Popup {
                     }
 
                     Rectangle {
+                        id: youbikeSearchResultsContainer
                         Layout.fillWidth: true
-                        height: 110
+                        Layout.preferredHeight: Math.min(150, root.height * 0.2)
+                        visible: root.youbikeSearchResults.length > 0
                         color: "#0CFFFFFF"
                         radius: 8
                         clip: true
@@ -378,38 +374,30 @@ Popup {
                         ListView {
                             anchors.fill: parent
                             anchors.margins: 6
-                            model: bikeSearchRepeater.model
+                            model: root.youbikeSearchResults
                             delegate: ItemDelegate {
-                                width: ListView.view.width
+                                width: ListView.view ? ListView.view.width : 0
                                 height: 30
-                                text: modelData.sna + "  " + (modelData.sarea || "")
                                 contentItem: Text {
-                                    text: parent.text
+                                    text: modelData.sna + "  " + (modelData.sarea || "")
                                     color: "white"
                                     verticalAlignment: Text.AlignVCenter
                                 }
                                 background: null
                                 onClicked: {
-                                    if (youbikeStations.length < 2) {
-                                        var exists = false;
-                                        for (var i = 0; i < youbikeStations.length; i++) {
-                                            if (youbikeStations[i].sno === modelData.sno)
-                                                exists = true;
-                                        }
-                                        if (!exists) {
-                                            var arr = youbikeStations.slice();
-                                            arr.push(modelData);
-                                            youbikeStations = arr;
-                                        }
+                                    var exists = false;
+                                    for (var i = 0; i < youbikeStations.length; i++) {
+                                        if (youbikeStations[i].sno === modelData.sno)
+                                            exists = true;
+                                    }
+                                    if (!exists) {
+                                        var arr = youbikeStations.slice();
+                                        arr.push(modelData);
+                                        youbikeStations = arr;
                                     }
                                 }
                             }
                         }
-
-                        Repeater {
-                            id: bikeSearchRepeater
-                            model: []
-                        } // just to hold data
                     }
                 }
             }

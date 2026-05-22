@@ -2,222 +2,136 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-ColumnLayout {
-    spacing: 8
+Flickable {
+    id: youbikeRoot
 
-    FontLoader {
-        id: materialFont
-        source: "fonts/MaterialIcons-Regular.ttf"
+    property real availableWidth: 600
+    property real targetAvailableWidth: availableWidth
+    property bool isRightPanelOpened: false
+    property real minCardWidth: 200
+    property real maxHeight: 0
+
+    Behavior on maxHeight {
+        NumberAnimation {
+            duration: 400
+            easing.type: Easing.OutCubic
+        }
     }
 
-    RowLayout {
-        Layout.fillWidth: true
+    width: availableWidth
+    height: Math.min(grid.implicitHeight, maxHeight)
+    contentHeight: grid.implicitHeight
+    clip: true
 
-        Text {
-            text: "YouBike 動態"
-            color: "#60FFFFFF"
-            font.pixelSize: 13
-            font.weight: Font.DemiBold
+    ScrollBar.vertical: ScrollBar {
+        policy: youbikeRoot.contentHeight > youbikeRoot.height
+                ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+        width: 4
+    }
+
+    Grid {
+        id: grid
+        width: youbikeRoot.availableWidth
+        spacing: 6
+
+        columns: {
+            var maxCols = Math.max(1, Math.floor((youbikeRoot.targetAvailableWidth + spacing) / (youbikeRoot.minCardWidth + spacing)));
+            var itemCount = bikeRepeater.model ? bikeRepeater.model.length : 0;
+            return Math.max(1, Math.min(itemCount > 0 ? itemCount : 1, maxCols));
         }
+        property real cardWidth: (youbikeRoot.targetAvailableWidth - (columns - 1) * spacing) / columns
 
-        Item {
-            Layout.fillWidth: true
-        }
+        Repeater {
+            id: bikeRepeater
+            model: []
 
-        Button {
-            id: refreshButton
-            width: 28
-            height: 28
-            Layout.preferredWidth: 28
-            Layout.preferredHeight: 28
-            padding: 0
+            delegate: Rectangle {
+                color: "#0AFFFFFF"
+                border.color: "#1EFFFFFF"
+                border.width: 1
+                width: grid.cardWidth
+                height: 50
+                radius: 12
 
-            scale: pressed ? 0.9 : (hovered ? 1.08 : 1.0)
-            Behavior on scale {
-                NumberAnimation {
-                    duration: 150
-                    easing.type: Easing.OutCubic
-                }
-            }
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 8
 
-            background: Rectangle {
-                radius: width / 2
-                color: refreshButton.pressed ? "#33FFFFFF" : (refreshButton.hovered ? "#1AFFFFFF" : "transparent")
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 150
+                    Text {
+                        text: "\ue52f" // directions_bike
+                        font.family: "Material Icons"
+                        font.pixelSize: 24
+                        color: {
+                            if (modelData.act !== "1")
+                                return "#E57373";
+                            var totalBikes = modelData.yb2 + modelData.eyb;
+                            if (modelData.tot === 0)
+                                return "#60FFFFFF";
+                            var r = totalBikes / modelData.tot;
+                            if (r >= 0.5)
+                                return "#81C784";
+                            if (r >= 0.2)
+                                return "#FFB74D";
+                            return "#E57373";
+                        }
+                        Layout.alignment: Qt.AlignVCenter
                     }
-                }
-            }
 
-            contentItem: Text {
-                id: refreshIcon
-                width: refreshButton.width
-                height: refreshButton.height
-                text: "\ue5d5"
-                font.family: materialFont.name
-                font.pixelSize: 18
-                color: refreshButton.hovered ? "white" : "#60FFFFFF"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                transformOrigin: Item.Center
-            }
+                    Column {
+                        Layout.fillWidth: true
+                        spacing: 1
+                        Layout.alignment: Qt.AlignVCenter
 
-            SequentialAnimation {
-                id: rotateAnim
-
-                NumberAnimation {
-                    target: refreshIcon
-                    property: "rotation"
-                    to: 360
-                    duration: 500
-                    easing.type: Easing.OutCubic
-                }
-                NumberAnimation {
-                    target: refreshIcon
-                    property: "rotation"
-                    to: 0
-                    duration: 300
-                    easing.type: Easing.InOutCubic
-                }
-            }
-
-            onClicked: {
-                backend.fetch_youbike();
-                rotateAnim.start();
-            }
-        }
-    }
-
-    Row {
-        id: spinnerRow
-        spacing: 10
-        visible: false
-        BusyIndicator {
-            width: 18
-            height: 18
-        }
-        Text {
-            text: "載入中…"
-            color: "#60FFFFFF"
-            font.pixelSize: 13
-            anchors.verticalCenter: parent.verticalCenter
-        }
-    }
-
-    ScrollView {
-        id: scrollView
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        clip: true
-
-        Column {
-            width: scrollView.width
-            spacing: 6
-
-            Text {
-                visible: bikeRepeater.count === 0 && !spinnerRow.visible
-                text: "無站點資料"
-                color: "#3DFFFFFF"
-                font.pixelSize: 13
-            }
-
-            Repeater {
-                id: bikeRepeater
-                model: []
-
-                delegate: Rectangle {
-                    width: parent.width
-                    height: 56
-                    color: "#0FFFFFFF"
-                    radius: 12
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        anchors.leftMargin: 16
-                        anchors.rightMargin: 16
-
-                        Column {
-                            Layout.fillWidth: true
-                            spacing: 2
+                        RowLayout {
+                            width: parent.width
+                            spacing: 6
 
                             Text {
-                                text: modelData.sna || ""
-                                color: (modelData.act === "1") ? "white" : "#60FFFFFF"
+                                text: (modelData.sna || "").replace("YouBike2.0_", "")
+                                color: "white"
+                                font.pixelSize: 12
+                                font.weight: Font.Medium
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                            }
+                            Text {
+                                text: (modelData.yb2 + modelData.eyb) + " 輛"
+                                color: "white"
                                 font.pixelSize: 14
                                 font.weight: Font.Medium
                             }
-                            Text {
-                                text: modelData.sarea || ""
-                                color: "#60FFFFFF"
-                                font.pixelSize: 11
-                            }
                         }
 
-                        Column {
-                            Layout.alignment: Qt.AlignRight
-                            spacing: 2
+                        RowLayout {
+                            width: parent.width
+                            spacing: 4
 
-                            Row {
-                                anchors.right: parent.right
-                                spacing: 4
-                                Text {
-                                    text: "\ue52f" // directions_bike
-                                    font.family: "Material Icons"
-                                    font.pixelSize: 18
-                                    color: "#89FFFFFF"
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-                                Text {
-                                    text: modelData.yb2
-                                    font.pixelSize: 20
-                                    font.weight: Font.Light
-                                    color: {
-                                        if (modelData.tot === 0)
-                                            return "#60FFFFFF";
-                                        var r = modelData.yb2 / modelData.tot;
-                                        if (r >= 0.5)
-                                            return "#81C784";
-                                        if (r >= 0.2)
-                                            return "#FFB74D";
-                                        return "#E57373";
-                                    }
-                                }
-                                Text {
-                                    text: " / "
-                                    font.pixelSize: 14
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    color: (modelData.act === "1") ? "white" : "#60FFFFFF"
-                                }
-                                Text {
-                                    text: "\ue3e7" // flash_on
-                                    font.family: "Material Icons"
-                                    font.pixelSize: 16
-                                    color: "#FFD54F" // yellow
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-                                Text {
-                                    text: modelData.eyb
-                                    font.pixelSize: 20
-                                    font.weight: Font.Light
-                                    color: {
-                                        if (modelData.tot === 0)
-                                            return "#60FFFFFF";
-                                        var r = modelData.eyb / modelData.tot;
-                                        if (r >= 0.5)
-                                            return "#81C784";
-                                        if (r >= 0.2)
-                                            return "#FFB74D";
-                                        return "#E57373";
-                                    }
-                                }
+                            Text {
+                                text: "一般 " + modelData.yb2
+                                color: "#89FFFFFF"
+                                font.pixelSize: 11
                             }
                             Text {
-                                text: "空位 " + modelData.bemp
-                                color: "#60FFFFFF"
+                                text: "·"
+                                color: "#40FFFFFF"
                                 font.pixelSize: 11
-                                anchors.right: parent.right
+                            }
+                            Text {
+                                text: "電輔 " + modelData.eyb
+                                color: "#89FFFFFF"
+                                font.pixelSize: 11
+                            }
+                            Text {
+                                text: "·"
+                                color: "#40FFFFFF"
+                                font.pixelSize: 11
+                            }
+                            Text {
+                                text: "空 " + modelData.bemp
+                                color: "#89FFFFFF"
+                                font.pixelSize: 11
+                                Layout.fillWidth: true
                             }
                         }
                     }
@@ -229,15 +143,17 @@ ColumnLayout {
     Connections {
         target: backend
         function onYoubikeUpdated(data) {
-            spinnerRow.visible = false;
-            scrollView.visible = true;
             bikeRepeater.model = data;
-            console.log("Update");
         }
     }
 
-    function setLoading(isLoading) {
-        spinnerRow.visible = isLoading;
-        scrollView.visible = !isLoading;
+    Timer {
+        interval: 60000 // 1 分鐘
+        running: youbikeRoot.isRightPanelOpened
+        repeat: true
+        triggeredOnStart: false
+        onTriggered: {
+            backend.fetch_youbike();
+        }
     }
 }
