@@ -65,12 +65,13 @@ ApplicationWindow {
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.margins: 32
-            spacing: 16
+            spacing: 12
+            readonly property int buttonSize: 40
 
             RoundButton {
                 id: settingsButton
-                width: 52
-                height: 52
+                width: parent.buttonSize
+                height: parent.buttonSize
                 scale: pressed ? 0.9 : 1.0
                 Behavior on scale {
                     NumberAnimation {
@@ -100,8 +101,8 @@ ApplicationWindow {
 
             RoundButton {
                 id: demoButton
-                width: 52
-                height: 52
+                width: parent.buttonSize
+                height: parent.buttonSize
                 scale: pressed ? 0.9 : 1.0
                 Behavior on scale {
                     NumberAnimation {
@@ -131,8 +132,8 @@ ApplicationWindow {
 
             RoundButton {
                 id: registerButton
-                width: 52
-                height: 52
+                width: parent.buttonSize
+                height: parent.buttonSize
                 scale: pressed ? 0.9 : 1.0
                 Behavior on scale {
                     NumberAnimation {

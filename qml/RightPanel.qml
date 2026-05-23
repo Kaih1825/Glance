@@ -81,13 +81,12 @@ Rectangle {
                     text: "重新辨識"
                     onClicked: backend.trigger_rescan()
                     background: Rectangle {
-                        color: "transparent"
-                        border.color: "#3DFFFFFF"
+                        color: parent.pressed ? "#4CFFFFFF" : "#33FFFFFF"
                         radius: 8
                     }
                     contentItem: Text {
                         text: parent.text
-                        color: "#B2FFFFFF"
+                        color: "white"
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }

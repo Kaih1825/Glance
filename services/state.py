@@ -25,8 +25,11 @@ class AppState(QObject):
 
     def set_mode(self, mode: str, users: list = None) -> None:
         """設定目前的模式，並發送訊號通知 UI"""
+        new_users = users or []
+        if self.mode == mode and self.identified_users == new_users:
+            return
         self.mode = mode
-        self.identified_users = users or []
+        self.identified_users = new_users
         self.mode_changed.emit(mode, self.identified_users)
 
     def start_register(self, user_id: str) -> None:

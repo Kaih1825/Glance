@@ -20,7 +20,7 @@ def init_db() -> None:
     conn = _get_conn()
     cur = conn.cursor()
     
-    # 建立行事曆與設定表
+    # 建立行事曆、設定表與使用者 UUID 對照表
     cur.executescript("""
         CREATE TABLE IF NOT EXISTS events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,10 +34,14 @@ def init_db() -> None:
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL DEFAULT '{}'
         );
+        CREATE TABLE IF NOT EXISTS users (
+            uuid TEXT PRIMARY KEY,
+            name TEXT NOT NULL UNIQUE
+        );
     """)
     conn.commit()
 
-    # 寫入行事曆 Demo 資料
+    # 寫入行行曆 Demo 資料
     if cur.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 0:
         _seed_demo_data(cur)
         conn.commit()
@@ -96,3 +100,27 @@ def set_setting(key: str, value) -> None:
     )
     conn.commit()
     conn.close()
+
+def get_user_uuid(name: str) -> str | None:
+    """根據使用者名稱取得其 UUID"""
+    conn = _get_conn()
+    row = conn.execute("SELECT uuid FROM users WHERE name = ?", (name,)).fetchone()
+    conn.close()
+    return row["uuid"] if row else None
+
+def add_user(uuid_str: str, name: str) -> None:
+    """新增使用者與其 UUID 對應關係"""
+    conn = _get_conn()
+    conn.execute("INSERT OR REPLACE INTO users (uuid, name) VALUES (?, ?)", (uuid_str, name))
+    conn.commit()
+    conn.close()
+
+def get_user_names(uuids: list[str]) -> list[str]:
+    """將辨識出的 UUID 列表轉換為使用者名稱列表"""
+    if not uuids:
+        return []
+    conn = _get_conn()
+    placeholders = ",".join("?" * len(uuids))
+    rows = conn.execute(f"SELECT name FROM users WHERE uuid IN ({placeholders})", uuids).fetchall()
+    conn.close()
+    return [r["name"] for r in rows]

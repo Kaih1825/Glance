@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 FACE_DB_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "face_db")
 # OpenCV 的 Haar 級聯分類器（初步偵測是否有人臉，速度快但較不精準）
 _CASCADE_PATH = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-_NO_FACE_TIMEOUT = 5.0   # 多久沒看到人臉就將 UI 切回閒置模式
+_NO_FACE_TIMEOUT = 8.0   # 多久沒看到人臉就將 UI 切回閒置模式
 _LOOP_INTERVAL = 0.6     # 迴圈間隔 (節省 CPU 資源)
 
 class CameraService:
@@ -124,6 +124,10 @@ class CameraService:
 
                 # 階段二：使用較耗資源的 DeepFace 進行「辨識」是誰
                 users = self._run_deepface(frame)
+                
+                # 辨識完成後，再次更新時間戳記（避免比對耗時導致逾時計算錯誤）
+                self._last_face_time = time.monotonic()
+                
                 if users:
                     self._state.set_mode("users", users)
                 else:
@@ -146,28 +150,42 @@ class CameraService:
             results = DeepFace.find(
                 img_path=frame, db_path=FACE_DB_DIR,
                 model_name="ArcFace", detector_backend="retinaface",
-                anti_spoofing=True, enforce_detection=False, silent=True
+                anti_spoofing=False, enforce_detection=False, silent=True
             )
 
+            from services import database
             user_ids = []
             for df in results:
                 if not df.empty:
-                    # 從檔案路徑中抽取出人名 (face_db/人名/圖片.jpg)
+                    # 從檔案路徑中抽取出資料夾名稱 (現在是 UUID)
                     uid = os.path.relpath(df.iloc[0]["identity"], FACE_DB_DIR).split(os.sep)[0]
                     if uid not in user_ids:
                         user_ids.append(uid)
-            return user_ids if user_ids else None
-        except Exception:
+            # 將辨識出的 UUID 列表轉換為使用者名稱列表
+            user_names = database.get_user_names(user_ids)
+            return user_names if user_names else None
+        except Exception as e:
+            logger.exception("DeepFace find 發生異常: %s", e)
             return None
 
     def _handle_register(self, user_id: str):
         """處理註冊請求：拍照存檔並強制 DeepFace 重新建立特徵庫"""
         self._state.rebuild_started.emit() # 通知 UI 顯示載入轉圈圈
         
+        from services import database
+        import uuid
+        
+        # 取得或為新使用者生成 UUID 
+        user_uuid = database.get_user_uuid(user_id)
+        if not user_uuid:
+            user_uuid = str(uuid.uuid4())
+            database.add_user(user_uuid, user_id)
+            logger.info(f"為新人員建立 UUID 對應: {user_id} -> {user_uuid}")
+        
         ret, frame = self._cap.read()
         if ret:
             # 1. 建立資料夾並儲存照片
-            user_dir = os.path.join(FACE_DB_DIR, user_id)
+            user_dir = os.path.join(FACE_DB_DIR, user_uuid)
             os.makedirs(user_dir, exist_ok=True)
             cv2.imwrite(os.path.join(user_dir, f"frame_{int(time.time())}.jpg"), frame)
 

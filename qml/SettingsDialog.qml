@@ -145,51 +145,6 @@ Popup {
                 width: settingsScrollView.width
                 spacing: 16
 
-                // Camera
-                ColumnLayout {
-                    spacing: 4
-                    RowLayout {
-                        spacing: 6
-                        Text {
-                            text: "\ue412" // photo_camera
-                            font.family: "Material Icons"
-                            font.pixelSize: 18
-                            color: "#B2FFFFFF"
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        Text {
-                            text: "攝影機選擇"
-                            color: "#B2FFFFFF"
-                            font.pixelSize: 14
-                            font.weight: Font.DemiBold
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                    }
-                    ComboBox {
-                        id: camComboBox
-                        Layout.fillWidth: true
-                        model: cameraOptions
-                        onActivated: index => {
-                            cameraIndex = index;
-                            backend.test_camera(index);
-                        }
-                    }
-                    Image {
-                        id: camPreview
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: Math.min(220, root.height * 0.3)
-                        fillMode: Image.PreserveAspectFit
-                        cache: false
-                        source: ""
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 1
-                    color: "#1EFFFFFF"
-                }
-
                 // Weather
                 ColumnLayout {
                     spacing: 4
@@ -210,7 +165,6 @@ Popup {
                             verticalAlignment: Text.AlignVCenter
                         }
                     }
-
 
                     // Chips
                     Flow {
@@ -251,6 +205,19 @@ Popup {
                         Button {
                             text: "搜尋"
                             onClicked: backend.search_weather(wSearchInput.text)
+                            background: Rectangle {
+                                color: parent.pressed ? "#4CFFFFFF" : "#33FFFFFF"
+                                radius: 8
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 16
+                                rightPadding: 16
+                            }
+                            padding: 8
                         }
                     }
 
@@ -320,7 +287,6 @@ Popup {
                         }
                     }
 
-
                     Flow {
                         Layout.fillWidth: true
                         spacing: 6
@@ -359,6 +325,19 @@ Popup {
                         Button {
                             text: "搜尋"
                             onClicked: backend.search_youbike(bSearchInput.text)
+                            background: Rectangle {
+                                color: parent.pressed ? "#4CFFFFFF" : "#33FFFFFF"
+                                radius: 8
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                color: "white"
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 16
+                                rightPadding: 16
+                            }
+                            padding: 8
                         }
                     }
 
@@ -400,6 +379,51 @@ Popup {
                         }
                     }
                 }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: "#1EFFFFFF"
+                }
+
+                // Camera
+                ColumnLayout {
+                    spacing: 4
+                    RowLayout {
+                        spacing: 6
+                        Text {
+                            text: "\ue412" // photo_camera
+                            font.family: "Material Icons"
+                            font.pixelSize: 18
+                            color: "#B2FFFFFF"
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        Text {
+                            text: "攝影機選擇"
+                            color: "#B2FFFFFF"
+                            font.pixelSize: 14
+                            font.weight: Font.DemiBold
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                    ComboBox {
+                        id: camComboBox
+                        Layout.fillWidth: true
+                        model: cameraOptions
+                        onActivated: index => {
+                            cameraIndex = index;
+                            backend.test_camera(index);
+                        }
+                    }
+                    Image {
+                        id: camPreview
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: Math.min(220, root.height * 0.3)
+                        fillMode: Image.PreserveAspectFit
+                        cache: false
+                        source: ""
+                    }
+                }
             }
         }
 
@@ -422,7 +446,7 @@ Popup {
                     buttonScale = 1;
             }
             background: Rectangle {
-                color: "#64B5F6"
+                color: parent.pressed ? "#4CFFFFFF" : "#33FFFFFF"
                 radius: 30
             }
             contentItem: RowLayout {
@@ -434,14 +458,14 @@ Popup {
                     text: "\ue161" // save
                     font.family: "Material Icons"
                     font.pixelSize: 18
-                    color: "black"
+                    color: "white"
                     verticalAlignment: Text.AlignVCenter
                 }
                 Text {
                     text: "儲存設定"
                     font.pixelSize: 14
                     font.weight: Font.Medium
-                    color: "black"
+                    color: "white"
                     verticalAlignment: Text.AlignVCenter
                 }
                 Item {
