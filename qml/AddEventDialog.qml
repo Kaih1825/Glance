@@ -61,6 +61,8 @@ Popup {
     property bool isPrivateSelected: false
     property string currentMode: rootContent.currentMode
     property var currentUsers: rootContent.currentUsers
+    property var selectedOwners: []
+    property var allRegisteredUsers: []
 
     function formatDate(date) {
         var y = date.getFullYear();
@@ -95,6 +97,15 @@ Popup {
         titleField.text = "";
         errorText.text = "";
         isPrivateSelected = false;
+
+        allRegisteredUsers = backend.get_all_users();
+        var owners = [];
+        for (var i = 0; i < currentUsers.length; i++) {
+            if (allRegisteredUsers.indexOf(currentUsers[i]) !== -1) {
+                owners.push(currentUsers[i]);
+            }
+        }
+        selectedOwners = owners;
 
         var now = new Date();
         var start = new Date(now);
@@ -269,35 +280,66 @@ Popup {
             }
         }
 
-        // Owner selection (Only visible if private and > 1 users identified)
+        // Owner selection (Only visible if private and > 0 users registered)
         ColumnLayout {
-            spacing: 4
+            spacing: 6
             Layout.fillWidth: true
-            visible: isPrivateSelected && currentUsers.length > 1
+            visible: isPrivateSelected && allRegisteredUsers.length > 0
 
             Text {
-                text: "私人事件擁有者"
+                text: "選擇私人事件成員 (複選)"
                 color: "#89FFFFFF"
                 font.pixelSize: 12
             }
 
-            ComboBox {
-                id: ownerComboBox
+            Flow {
                 Layout.fillWidth: true
-                model: currentUsers
+                spacing: 8
                 
-                background: Rectangle {
-                    color: "#1EFFFFFF"
-                    border.color: "#1AFFFFFF"
-                    border.width: 1
-                    radius: 8
-                }
-                contentItem: Text {
-                    text: ownerComboBox.displayText
-                    color: "white"
-                    verticalAlignment: Text.AlignVCenter
-                    leftPadding: 10
-                    font.pixelSize: 13
+                Repeater {
+                    id: userRepeater
+                    model: allRegisteredUsers
+                    delegate: Button {
+                        id: userBtn
+                        property bool isChecked: selectedOwners.indexOf(modelData) !== -1
+                        
+                        background: Rectangle {
+                            color: isChecked ? "#4C2196F3" : "#1AFFFFFF"
+                            border.color: isChecked ? "#FF2196F3" : "#1AFFFFFF"
+                            border.width: 1
+                            radius: 8
+                            Behavior on color { ColorAnimation { duration: 100 } }
+                        }
+                        
+                        contentItem: RowLayout {
+                            spacing: 6
+                            Text {
+                                text: userBtn.isChecked ? "\ue834" : "\ue835" // checked_box vs unchecked_box icon
+                                font.family: "Material Icons"
+                                font.pixelSize: 16
+                                color: userBtn.isChecked ? "white" : "#89FFFFFF"
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            Text {
+                                text: modelData
+                                color: "white"
+                                font.pixelSize: 13
+                                font.weight: userBtn.isChecked ? Font.DemiBold : Font.Normal
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
+                        
+                        onClicked: {
+                            var arr = selectedOwners.slice();
+                            var idx = arr.indexOf(modelData);
+                            if (idx !== -1) {
+                                arr.splice(idx, 1);
+                            } else {
+                                arr.push(modelData);
+                            }
+                            selectedOwners = arr;
+                        }
+                    }
                 }
             }
         }
@@ -477,12 +519,11 @@ Popup {
                     var visibility = isPrivateSelected ? "private" : "public";
                     var owner = "";
                     if (isPrivateSelected) {
-                        if (currentUsers.length > 0) {
-                            if (currentUsers.length > 1) {
-                                owner = ownerComboBox.currentText;
-                            } else {
-                                owner = currentUsers[0];
-                            }
+                        if (selectedOwners.length > 0) {
+                            owner = selectedOwners.join(",");
+                        } else {
+                            errorText.text = "請至少選擇一位私人事件成員";
+                            return;
                         }
                     }
 

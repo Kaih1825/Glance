@@ -64,10 +64,6 @@ Rectangle {
             
             CalendarWidget {
                 Layout.fillWidth: true
-                Layout.preferredHeight: Math.min(220, Math.max(120, parent.height * 0.35))
-            }
-            
-            Item {
                 Layout.fillHeight: true
             }
             

@@ -63,26 +63,25 @@ def _seed_demo_data(cur) -> None:
 def get_events(user_ids: list[str]) -> list[dict]:
     """根據辨識出的使用者，回傳他們有權限看到的行事曆事件"""
     conn = _get_conn()
-    now = datetime.now().isoformat()
-    
-    if user_ids:
-        # 顯示公開事件 + 該使用者的私人事件
-        placeholders = ",".join("?" * len(user_ids))
-        query = f"""
-            SELECT * FROM events WHERE end_dt >= ? AND 
-            (visibility = 'public' OR (visibility IN ('private','shared') AND owner_id IN ({placeholders})))
-            ORDER BY start_dt ASC
-        """
-        rows = conn.execute(query, [now] + user_ids).fetchall()
-    else:
-        # 訪客只顯示公開事件
-        rows = conn.execute(
-            "SELECT * FROM events WHERE visibility = 'public' AND end_dt >= ? ORDER BY start_dt ASC",
-            (now,)
-        ).fetchall()
-        
+    rows = conn.execute("SELECT * FROM events ORDER BY start_dt ASC").fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    
+    filtered_events = []
+    for r in rows:
+        event = dict(r)
+        vis = event.get("visibility", "public")
+        owner_id = event.get("owner_id")
+        
+        if vis == "public":
+            filtered_events.append(event)
+        elif vis in ("private", "shared"):
+            if owner_id and user_ids:
+                # owner_id 可以是逗號分隔的多個使用者名稱 (例如 "jason,mark")
+                owners = [o.strip() for o in owner_id.split(",")]
+                if any(uid in owners for uid in user_ids):
+                    filtered_events.append(event)
+                    
+    return filtered_events
 
 def get_setting(key: str, default=None):
     """取得設定值 (JSON格式)"""
@@ -140,4 +139,11 @@ def add_event(title: str, start_dt: str, end_dt: str, visibility: str, owner_id:
         return False
     finally:
         conn.close()
+
+def get_all_user_names() -> list[str]:
+    """取得所有使用者名稱"""
+    conn = _get_conn()
+    rows = conn.execute("SELECT name FROM users ORDER BY name ASC").fetchall()
+    conn.close()
+    return [r["name"] for r in rows]
 

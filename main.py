@@ -81,6 +81,11 @@ class Backend(QObject):
         if success:
             self.fetch_calendar(self.state.identified_users)
 
+    @pyqtSlot(result='QVariantList')
+    def get_all_users(self):
+        """取得所有註冊使用者"""
+        return database.get_all_user_names()
+
     @pyqtSlot()
     def toggle_demo(self):
         """開啟/關閉模擬測試模式"""

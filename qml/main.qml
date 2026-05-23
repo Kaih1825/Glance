@@ -5,12 +5,12 @@ import QtQuick.Effects
 
 ApplicationWindow {
     visible: true
-    width: 1024
-    height: 600
+    width: 1200
+    height: 700
     title: "玄關智慧中樞"
     color: '#c90d1117'
-    minimumWidth: 800
-    minimumHeight: 500
+    minimumWidth: 1000
+    minimumHeight: 700
 
     FontLoader {
         id: materialFont
