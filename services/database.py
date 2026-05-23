@@ -124,3 +124,20 @@ def get_user_names(uuids: list[str]) -> list[str]:
     rows = conn.execute(f"SELECT name FROM users WHERE uuid IN ({placeholders})", uuids).fetchall()
     conn.close()
     return [r["name"] for r in rows]
+
+def add_event(title: str, start_dt: str, end_dt: str, visibility: str, owner_id: str | None = None) -> bool:
+    """新增行事曆事件"""
+    conn = _get_conn()
+    try:
+        conn.execute(
+            "INSERT INTO events (title, start_dt, end_dt, visibility, owner_id) VALUES (?, ?, ?, ?, ?)",
+            (title, start_dt, end_dt, visibility, owner_id)
+        )
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error adding event: {e}")
+        return False
+    finally:
+        conn.close()
+

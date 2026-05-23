@@ -73,6 +73,14 @@ class Backend(QObject):
         """從 UI 按下「註冊新人員」"""
         self.state.start_register(user_id)
 
+    @pyqtSlot(str, str, str, str, str)
+    def add_event(self, title: str, start_dt: str, end_dt: str, visibility: str, owner_id: str):
+        """從 UI 新增行事曆事件"""
+        owner = owner_id if (owner_id and owner_id != "None" and owner_id != "") else None
+        success = database.add_event(title, start_dt, end_dt, visibility, owner)
+        if success:
+            self.fetch_calendar(self.state.identified_users)
+
     @pyqtSlot()
     def toggle_demo(self):
         """開啟/關閉模擬測試模式"""

@@ -5,11 +5,53 @@ import QtQuick.Layouts
 ColumnLayout {
     spacing: 8
     
-    Text {
-        text: "行事曆"
-        color: "#60FFFFFF"
-        font.pixelSize: 13
-        font.weight: Font.DemiBold
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: 8
+        
+        Text {
+            text: "行事曆"
+            color: "#60FFFFFF"
+            font.pixelSize: 13
+            font.weight: Font.DemiBold
+            verticalAlignment: Text.AlignVCenter
+        }
+        
+        Item {
+            Layout.fillWidth: true
+        }
+        
+        RoundButton {
+            id: addEventButton
+            width: 22
+            height: 22
+            Layout.preferredWidth: 22
+            Layout.preferredHeight: 22
+            padding: 0
+            
+            scale: pressed ? 0.9 : (hovered ? 1.1 : 1.0)
+            Behavior on scale { NumberAnimation { duration: 100 } }
+            
+            background: Rectangle {
+                radius: 11
+                color: parent.pressed ? "#4CFFFFFF" : (parent.hovered ? "#26FFFFFF" : "transparent")
+                Behavior on color { ColorAnimation { duration: 150 } }
+            }
+            
+            contentItem: Text {
+                text: "\ue145" // add icon
+                font.family: "Material Icons"
+                font.pixelSize: 14
+                color: parent.hovered ? "white" : "#60FFFFFF"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                Behavior on color { ColorAnimation { duration: 150 } }
+            }
+            
+            onClicked: {
+                openAddEventDialog();
+            }
+        }
     }
     
     ScrollView {

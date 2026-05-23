@@ -21,9 +21,11 @@ ApplicationWindow {
         id: rootContent
         anchors.fill: parent
 
-        property real popupOpacity: Math.max(settingsDialog.opacity, registerDialog.opacity)
+        property string currentMode: "idle"
+        property var currentUsers: []
+        property real popupOpacity: Math.max(settingsDialog.opacity, Math.max(registerDialog.opacity, addEventDialog.opacity))
 
-        layer.enabled: settingsDialog.visible || registerDialog.visible
+        layer.enabled: settingsDialog.visible || registerDialog.visible || addEventDialog.visible
         layer.effect: MultiEffect {
             blurEnabled: true
             blurMax: 32
@@ -175,9 +177,16 @@ ApplicationWindow {
         anchors.centerIn: parent
     }
 
+    AddEventDialog {
+        id: addEventDialog
+        anchors.centerIn: parent
+    }
+
     Connections {
         target: backend
         function onModeChanged(mode, users) {
+            rootContent.currentMode = mode;
+            rootContent.currentUsers = users;
             if (mode === "idle") {
                 openAnimation.stop();
                 if (rightPanel.isOpened || leftPanel.isYoubikeOpened) {
@@ -202,6 +211,10 @@ ApplicationWindow {
 
     function openRegisterDialog() {
         registerDialog.openDialog();
+    }
+
+    function openAddEventDialog() {
+        addEventDialog.openDialog();
     }
 
     SequentialAnimation {
