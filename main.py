@@ -88,22 +88,16 @@ class Backend(QObject):
     @pyqtSlot()
     def fetch_weather(self):
         """非同步抓取天氣，避免卡住畫面"""
-        def _do():
-            self.weatherUpdated.emit(fetch_weather())
-        threading.Thread(target=_do, daemon=True).start()
+        threading.Thread(target=lambda: self.weatherUpdated.emit(fetch_weather()), daemon=True).start()
 
     @pyqtSlot()
     def fetch_youbike(self):
         """非同步抓取 YouBike，避免卡住畫面"""
-        def _do():
-            self.youbikeUpdated.emit(fetch_youbike())
-        threading.Thread(target=_do, daemon=True).start()
+        threading.Thread(target=lambda: self.youbikeUpdated.emit(fetch_youbike()), daemon=True).start()
         
     def fetch_calendar(self, users: list[str]):
         """非同步抓取行事曆，避免卡住畫面"""
-        def _do():
-            self.calendarUpdated.emit(database.get_events(users))
-        threading.Thread(target=_do, daemon=True).start()
+        threading.Thread(target=lambda: self.calendarUpdated.emit(database.get_events(users)), daemon=True).start()
 
     # ── 設定相關 (Settings) ──
 
@@ -145,13 +139,11 @@ class Backend(QObject):
 
     @pyqtSlot(str)
     def search_weather(self, query: str):
-        def _do(): self.weatherSearchResults.emit(settings_service.search_weather_location(query))
-        threading.Thread(target=_do, daemon=True).start()
+        threading.Thread(target=lambda: self.weatherSearchResults.emit(settings_service.search_weather_location(query)), daemon=True).start()
 
     @pyqtSlot(str)
     def search_youbike(self, query: str):
-        def _do(): self.youbikeSearchResults.emit(settings_service.search_youbike_stations(query))
-        threading.Thread(target=_do, daemon=True).start()
+        threading.Thread(target=lambda: self.youbikeSearchResults.emit(settings_service.search_youbike_stations(query)), daemon=True).start()
 
     # ── 推薦站點 (Recommendation) ──
 
@@ -160,13 +152,8 @@ class Backend(QObject):
         """非同步取得附近最推薦的 YouBike 站點"""
         def _do():
             loc = settings_service.get_home_location()
-            if not loc:
-                return
-            result = fetch_recommendation(loc["lat"], loc["lng"])
-            if result:
-                self.recommendationUpdated.emit(result)
-            else:
-                self.recommendationUpdated.emit({})
+            result = fetch_recommendation(loc["lat"], loc["lng"]) if loc else None
+            self.recommendationUpdated.emit(result or {})
         threading.Thread(target=_do, daemon=True).start()
 
     @pyqtSlot(float, float, str)
@@ -184,9 +171,7 @@ class Backend(QObject):
     @pyqtSlot(str)
     def search_home_location(self, query: str):
         """搜尋地點名稱（Nominatim）並回傳候選座標"""
-        def _do():
-            self.homeLocationSearchResults.emit(settings_service.search_home_location(query))
-        threading.Thread(target=_do, daemon=True).start()
+        threading.Thread(target=lambda: self.homeLocationSearchResults.emit(settings_service.search_home_location(query)), daemon=True).start()
 
 
     @pyqtSlot(int)

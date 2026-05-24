@@ -150,13 +150,9 @@ class CameraService:
             )
 
             from services import database
-            user_ids = []
-            for df in results:
-                if not df.empty:
-                    # 從檔案路徑中抽取出資料夾名稱 (現在是 UUID)
-                    uid = os.path.relpath(df.iloc[0]["identity"], FACE_DB_DIR).split(os.sep)[0]
-                    if uid not in user_ids:
-                        user_ids.append(uid)
+            user_ids = [os.path.relpath(df.iloc[0]["identity"], FACE_DB_DIR).split(os.sep)[0] for df in results if not df.empty]
+            user_ids = list(dict.fromkeys(user_ids)) # deduplicate
+            
             # 將辨識出的 UUID 列表轉換為使用者名稱列表
             user_names = database.get_user_names(user_ids)
             return user_names if user_names else None
