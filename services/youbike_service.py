@@ -31,7 +31,14 @@ def fetch_youbike() -> list[dict]:
         # 將回傳資料映射成字典方便快速查詢
         status_map = {}
         if data_res.get("retCode") == 1 and "retVal" in data_res:
-            for item in data_res["retVal"].get("data", []):
+            retVal = data_res["retVal"]
+            if isinstance(retVal, list):
+                stations = retVal
+            elif isinstance(retVal, dict):
+                stations = retVal.get("data", [])
+            else:
+                stations = []
+            for item in stations:
                 status_map[item.get("station_no")] = item
 
         # 整理成 UI 需要的格式

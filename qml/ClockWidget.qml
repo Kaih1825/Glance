@@ -8,7 +8,6 @@ Column {
     
     Text {
         id: timeText
-        font.family: "monospace"
         font.pixelSize: Math.round(Math.min(92, Math.max(50, parentHeight * 0.15)))
         font.weight: Font.Light
         color: "white"
