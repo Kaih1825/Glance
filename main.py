@@ -48,6 +48,7 @@ class Backend(QObject):
     recommendationUpdated = pyqtSignal('QVariantMap')# 推薦站點資料更新
     homeLocationSearchResults = pyqtSignal('QVariantList') # 位置搜尋結果
     homeLocationLoaded = pyqtSignal('QVariantMap')   # 通知 QML 目前已儲存的位置
+    actionMessage = pyqtSignal(str)                  # 通知 QML 顯示操作訊息（如：未找到站點）
 
     def __init__(self, state: AppState, camera: CameraService):
         super().__init__()
@@ -166,12 +167,14 @@ class Backend(QObject):
     @pyqtSlot(float, float, str)
     def save_home_location(self, lat: float, lng: float, name: str):
         """儲存使用者主要位置，並立刻觸發推薦更新"""
-        settings_service.set_home_location(lat, lng, name)
-        settings_service.init_default_data()
-        self.fetch_recommendation()
-        self.fetch_weather()
-        if self.state.mode != "idle":
-            self.fetch_youbike()
+        def _do():
+            settings_service.set_home_location(lat, lng, name)
+            settings_service.init_default_data()
+            self.fetch_recommendation()
+            self.fetch_weather()
+            if self.state.mode != "idle":
+                self.fetch_youbike()
+        threading.Thread(target=_do, daemon=True).start()
 
     @pyqtSlot()
     def load_home_location(self):
@@ -199,6 +202,9 @@ class Backend(QObject):
                 settings_service.set_youbike_stations(stations)
                 self.fetch_youbike()
                 self.load_settings()
+                self.actionMessage.emit("已成功加入附近的 YouBike 站點")
+            else:
+                self.actionMessage.emit("附近沒有找到 YouBike 站點")
         threading.Thread(target=_do, daemon=True).start()
 
     @pyqtSlot(float, float)
@@ -221,6 +227,9 @@ class Backend(QObject):
                 settings_service.set_youbike_stations(existing)
                 self.fetch_youbike()
                 self.load_settings()
+                self.actionMessage.emit("已成功加入附近的 YouBike 站點")
+            else:
+                self.actionMessage.emit("附近沒有找到 YouBike 站點")
         threading.Thread(target=_do, daemon=True).start()
 
     @pyqtSlot(float, float, str)

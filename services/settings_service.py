@@ -234,6 +234,10 @@ def _fetch_nearby_youbike(lat: float, lng: float, limit: int = 6) -> list[dict]:
 
 def init_default_data() -> None:
     """若資料庫沒有天氣與 YouBike 站點，且有設定主要地點，則預設帶入"""
+    from services.database import get_setting, set_setting
+    if get_setting("has_initialized_defaults", False):
+        return
+
     home_loc = get_home_location()
     if not home_loc:
         return
@@ -253,3 +257,5 @@ def init_default_data() -> None:
         stations = _fetch_nearby_youbike(home_loc["lat"], home_loc["lng"])
         if stations:
             set_youbike_stations(stations)
+    
+    set_setting("has_initialized_defaults", True)

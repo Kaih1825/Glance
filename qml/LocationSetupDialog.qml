@@ -76,6 +76,11 @@ Popup {
             root.searchResults = res;
             root.selectedLocation = null;
         }
+
+        function onActionMessage(msg) {
+            statusMessageText.text = msg;
+            statusMessageTimer.restart();
+        }
     }
 
     ColumnLayout {
@@ -282,7 +287,7 @@ Popup {
         // ── 快速動作 ──
         RowLayout {
             Layout.alignment: Qt.AlignRight
-            visible: root.selectedLocation !== null
+            visible: root.selectedLocation !== null && root.hasExistingLocation
             spacing: 6
 
             Button {
@@ -337,6 +342,22 @@ Popup {
                     font.pixelSize: 11
                     horizontalAlignment: Text.AlignHCenter
                 }
+            }
+        }
+
+        // ── 狀態訊息提示 ──
+        Text {
+            id: statusMessageText
+            text: ""
+            color: "#EF5350" // 紅色提示，如果成功也可以改顏色，但這邊主要是給找不到的警告
+            font.pixelSize: 13
+            Layout.alignment: Qt.AlignRight
+            visible: text !== ""
+            
+            Timer {
+                id: statusMessageTimer
+                interval: 3000
+                onTriggered: statusMessageText.text = ""
             }
         }
 

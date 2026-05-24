@@ -121,6 +121,11 @@ class CameraService:
                 # 階段二：使用較耗資源的 DeepFace 進行「辨識」是誰
                 users = self._run_deepface(frame)
                 
+                # 如果 users 是 False，代表 DeepFace 發現這其實不是人臉（OpenCV 誤判）
+                if users is False:
+                    time.sleep(_LOOP_INTERVAL)
+                    continue
+                
                 # 辨識完成後，再次更新時間戳記（避免比對耗時導致逾時計算錯誤）
                 self._last_face_time = time.monotonic()
                 
@@ -134,14 +139,16 @@ class CameraService:
             if self._cap:
                 self._cap.release()
 
-    def _run_deepface(self, frame: np.ndarray) -> list[str] | None:
-        """透過 DeepFace 比對資料庫，回傳辨識出的人名列表。"""
-        # 如果資料庫是空的，直接當作訪客
-        if not [d for d in os.listdir(FACE_DB_DIR) if os.path.isdir(os.path.join(FACE_DB_DIR, d))]:
-            return None
-
+    def _run_deepface(self, frame: np.ndarray) -> list[str] | None | bool:
+        """透過 DeepFace 比對資料庫，回傳辨識出的人名列表。回傳 False 代表找不到人臉（OpenCV 誤判）。"""
+        # 如果資料庫是空的，我們還是可以用 extract_faces 驗證一下是不是真的有人臉
         try:
             from deepface import DeepFace
+            if not [d for d in os.listdir(FACE_DB_DIR) if os.path.isdir(os.path.join(FACE_DB_DIR, d))]:
+                # 資料庫為空，只驗證是否有人臉
+                DeepFace.extract_faces(img_path=frame, detector_backend="retinaface", enforce_detection=True)
+                return None
+            
             # 進行人臉比對，開啟防偽 (anti_spoofing) 避免照片騙過相機
             results = DeepFace.find(
                 img_path=frame, db_path=FACE_DB_DIR,
@@ -156,6 +163,11 @@ class CameraService:
             # 將辨識出的 UUID 列表轉換為使用者名稱列表
             user_names = database.get_user_names(user_ids)
             return user_names if user_names else None
+        except ValueError as e:
+            if "Face could not be detected" in str(e) or "could not be detected" in str(e) or "could not find any face" in str(e).lower():
+                return False
+            logger.exception("DeepFace ValueError: %s", e)
+            return None
         except Exception as e:
             logger.exception("DeepFace find 發生異常: %s", e)
             return None
