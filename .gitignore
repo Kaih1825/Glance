@@ -11,3 +11,7 @@ wheels/
 
 face_db
 entryway.db
+
+# Database and User Data
+face_db/
+entryway.db
