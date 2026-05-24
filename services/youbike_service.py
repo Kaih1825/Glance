@@ -8,7 +8,7 @@ from services.settings_service import get_youbike_stations, get_default_youbike_
 _YOUBIKE_API = "https://apis.youbike.com.tw/tw2/parkingInfo"
 
 def fetch_youbike() -> list[dict]:
-    print("SSSS")
+    print("Youbike")
     """抓取設定好的 YouBike 站點狀態（包含可借車輛、空位數量，區分 YouBike 2.0 / 2.0e）。"""
     saved = get_youbike_stations()
     

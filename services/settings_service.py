@@ -125,24 +125,11 @@ def search_weather_location(query: str) -> list[dict]:
         seen_names = set()
         for r in resp:
             addr = r.get("address", {})
-            city_or_county = addr.get("city") or addr.get("county") or addr.get("state") or ""
-            district = addr.get("suburb") or addr.get("town") or addr.get("village") or addr.get("city_district") or addr.get("district") or ""
-            
-            # 建立乾淨的名稱
-            if city_or_county and district:
-                if district in city_or_county:
-                    name = city_or_county
-                elif city_or_county in district:
-                    name = district
-                else:
-                    name = f"{city_or_county}{district}"
-            else:
-                name = city_or_county or district or r.get("display_name").split(",")[0]
-            
-            # 若非台灣地區則標記國家
-            country = addr.get("country", "")
-            if country and country != "臺灣":
-                name = f"{name} ({country})"
+            raw_name = r.get("display_name", "")
+            # 取出各部分，並過濾掉「臺灣」以節省顯示空間
+            parts = [p.strip() for p in raw_name.split(",")]
+            parts = [p for p in parts if p not in ("臺灣", "Taiwan")]
+            name = ", ".join(parts) if parts else raw_name
                 
             if name and name not in seen_names:
                 seen_names.add(name)
@@ -173,3 +160,18 @@ def search_youbike_stations(query: str) -> list[dict]:
         ][:20]
     except Exception:
         return []
+
+# ── 使用者主要位置（GPS 座標）──
+def get_home_location() -> dict | None:
+    """取得使用者設定的主要位置，回傳 {lat, lng, name} 或 None"""
+    from services.database import get_home_location as _db_get
+    return _db_get()
+
+def set_home_location(lat: float, lng: float, name: str) -> None:
+    """儲存使用者的主要位置"""
+    from services.database import set_home_location as _db_set
+    _db_set(lat, lng, name)
+
+def search_home_location(query: str) -> list[dict]:
+    """搜尋位置以取得 GPS 座標（共用天氣地點搜尋邏輯）"""
+    return search_weather_location(query)

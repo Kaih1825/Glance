@@ -63,6 +63,7 @@ Popup {
     property var youbikeSearchResults: []
     property int cameraIndex: 0
     property var cameraOptions: []
+    property string homeLocationName: ""  // 目前儲存的位置名稱
 
     function openSettings() {
         backend.load_settings();
@@ -84,6 +85,7 @@ Popup {
             camComboBox.currentIndex = cIdx;
             weatherSearchResults = [];
             youbikeSearchResults = [];
+            backend.load_home_location();
         }
 
         function onPreviewFrame(b64) {
@@ -100,6 +102,10 @@ Popup {
             console.log("QML onYoubikeSearchResults received:", JSON.stringify(res));
             root.youbikeSearchResults = [];
             root.youbikeSearchResults = res;
+        }
+
+        function onHomeLocationLoaded(loc) {
+            root.homeLocationName = (loc && loc.name) ? loc.name : "";
         }
     }
 
@@ -144,6 +150,90 @@ Popup {
             ColumnLayout {
                 width: settingsScrollView.width
                 spacing: 16
+
+                // My Location
+                ColumnLayout {
+                    spacing: 4
+                    RowLayout {
+                        spacing: 6
+                        Text {
+                            text: "\ue0c8"  // location_on
+                            font.family: "Material Icons"
+                            font.pixelSize: 18
+                            color: "#B2FFFFFF"
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        Text {
+                            text: "我的位置"
+                            color: "#B2FFFFFF"
+                            font.pixelSize: 14
+                            font.weight: Font.DemiBold
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 40
+                            radius: 10
+                            color: "#0CFFFFFF"
+                            border.color: "#1AFFFFFF"
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.margins: 10
+                                spacing: 8
+
+                                Text {
+                                    text: "\ue0c8"
+                                    font.family: "Material Icons"
+                                    font.pixelSize: 16
+                                    color: root.homeLocationName ? "#64B5F6" : "#40FFFFFF"
+                                }
+                                Text {
+                                    text: root.homeLocationName || "尚未設定位置"
+                                    color: root.homeLocationName ? "white" : "#60FFFFFF"
+                                    font.pixelSize: 13
+                                    Layout.fillWidth: true
+                                    elide: Text.ElideRight
+                                }
+                            }
+                        }
+
+                        Button {
+                            text: "更改位置"
+                            padding: 9
+                            onClicked: {
+                                locationSetupDialog.hasExistingLocation = true;
+                                locationSetupDialog.open();
+                            }
+                            background: Rectangle {
+                                color: parent.pressed ? "#4CFFFFFF" : "#33FFFFFF"
+                                radius: 8
+                                Behavior on color { ColorAnimation { duration: 100 } }
+                            }
+                            contentItem: Text {
+                                text: parent.text
+                                color: "white"
+                                font.pixelSize: 13
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 6
+                                rightPadding: 6
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: "#1EFFFFFF"
+                }
 
                 // Weather
                 ColumnLayout {

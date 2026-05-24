@@ -19,8 +19,8 @@ Flickable {
     }
 
     width: availableWidth
-    height: Math.min(grid.implicitHeight, maxHeight)
-    contentHeight: grid.implicitHeight
+    height: Math.min(contentCol.implicitHeight, maxHeight)
+    contentHeight: contentCol.implicitHeight
     clip: true
 
     ScrollBar.vertical: ScrollBar {
@@ -29,10 +29,15 @@ Flickable {
         width: 4
     }
 
-    Grid {
-        id: grid
+    Column {
+        id: contentCol
         width: youbikeRoot.availableWidth
-        spacing: 6
+        spacing: 8
+
+        Grid {
+            id: grid
+            width: parent.width
+            spacing: 6
 
         columns: {
             var maxCols = Math.max(1, Math.floor((youbikeRoot.targetAvailableWidth + spacing) / (youbikeRoot.minCardWidth + spacing)));
@@ -141,10 +146,11 @@ Flickable {
         }
     }
 
-    Connections {
-        target: backend
-        function onYoubikeUpdated(data) {
-            bikeRepeater.model = data;
+        Connections {
+            target: backend
+            function onYoubikeUpdated(data) {
+                bikeRepeater.model = data;
+            }
         }
     }
 

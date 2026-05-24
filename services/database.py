@@ -147,3 +147,10 @@ def get_all_user_names() -> list[str]:
     conn.close()
     return [r["name"] for r in rows]
 
+def get_home_location() -> dict | None:
+    """取得使用者設定的主要位置（lat, lng, name），若未設定則回傳 None"""
+    return get_setting("home_location", None)
+
+def set_home_location(lat: float, lng: float, name: str) -> None:
+    """儲存使用者的主要位置"""
+    set_setting("home_location", {"lat": lat, "lng": lng, "name": name})

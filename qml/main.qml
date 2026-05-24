@@ -23,9 +23,11 @@ ApplicationWindow {
 
         property string currentMode: "idle"
         property var currentUsers: []
-        property real popupOpacity: Math.max(settingsDialog.opacity, Math.max(registerDialog.opacity, addEventDialog.opacity))
+        property real popupOpacity: Math.max(settingsDialog.opacity,
+                                    Math.max(registerDialog.opacity,
+                                    Math.max(addEventDialog.opacity, locationSetupDialog.opacity)))
 
-        layer.enabled: settingsDialog.visible || registerDialog.visible || addEventDialog.visible
+        layer.enabled: settingsDialog.visible || registerDialog.visible || addEventDialog.visible || locationSetupDialog.visible
         layer.effect: MultiEffect {
             blurEnabled: true
             blurMax: 32
@@ -182,6 +184,16 @@ ApplicationWindow {
         anchors.centerIn: parent
     }
 
+    LocationSetupDialog {
+        id: locationSetupDialog
+        anchors.centerIn: parent
+        // 儲存位置後更新設定頁的顯示
+        onClosed: {
+            settingsDialog.homeLocationName = "";
+            backend.load_home_location();
+        }
+    }
+
     Connections {
         target: backend
         function onModeChanged(mode, users) {
@@ -206,6 +218,14 @@ ApplicationWindow {
         function onRebuildDone() {
             rightPanel.showRebuilding = false;
             registerDialog.close();
+        }
+        // 程式啟動後若無位置資料，自動彈出位置設定 Dialog
+        function onHomeLocationLoaded(loc) {
+            settingsDialog.homeLocationName = (loc && loc.name) ? loc.name : "";
+            if (!loc || !loc.name) {
+                locationSetupDialog.hasExistingLocation = false;
+                locationSetupDialog.open();
+            }
         }
     }
 

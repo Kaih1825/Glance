@@ -46,6 +46,15 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 availableWidth: parent.width * 0.95
                 targetAvailableWidth: Math.min(leftPanelRoot.targetWidth * 0.95, 500)
+                isRightPanelOpened: leftPanelRoot.isRightPanelOpened
+            }
+
+            RecommendWidget {
+                id: recommendWidget
+                anchors.horizontalCenter: parent.horizontalCenter
+                availableWidth: parent.width * 0.95
+                targetAvailableWidth: leftPanelRoot.targetWidth * 0.95
+                isRightPanelOpened: leftPanelRoot.isRightPanelOpened
             }
 
             YouBikeWidget {

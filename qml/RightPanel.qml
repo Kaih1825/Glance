@@ -121,8 +121,7 @@ Rectangle {
         
         // Rebuilding overlay
         Rectangle {
-            color: "#D80D0D1A"
-            radius: 12
+            color: "transparent"
             
             Column {
                 anchors.centerIn: parent

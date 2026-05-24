@@ -286,7 +286,7 @@ ColumnLayout {
                     model: calendarModel
                     delegate: Rectangle {
                         width: (daysGrid.width - (daysGrid.spacing * 6)) / 7
-                        height: 26 // 從 32 縮小至 26，使月曆更精簡
+                        height: 30 // 從 32 縮小至 26，使月曆更精簡
                         radius: 6
                         
                         // 背景高亮邏輯 (選取中帶深藍底，今日帶微白底)

@@ -27,6 +27,7 @@ _DEFAULT_LOCATIONS = [{"name": "臺北", "lat": 25.04, "lon": 121.51, "country":
 
 def fetch_weather() -> list[dict]:
     """抓取設定地點的天氣，回傳包含溫度、濕度、風速等資訊的字典列表。"""
+    print("Weather")
     locations = get_weather_locations() or _DEFAULT_LOCATIONS
     results = []
     

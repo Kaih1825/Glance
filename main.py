@@ -19,6 +19,7 @@ from services.camera_service import CameraService
 from services.weather_service import fetch_weather
 from services.youbike_service import fetch_youbike
 from services import database, settings_service
+from services.recommendation_service import fetch_recommendation
 
 
 class Backend(QObject):
@@ -40,6 +41,9 @@ class Backend(QObject):
     youbikeSearchResults = pyqtSignal('QVariantList')# 通知 YouBike 搜尋結果
     settingsLoaded = pyqtSignal('QVariantList', 'QVariantList', int, 'QVariantList') # 載入設定
     previewFrame = pyqtSignal(str)                   # 攝影機預覽畫面
+    recommendationUpdated = pyqtSignal('QVariantMap')# 推薦站點資料更新
+    homeLocationSearchResults = pyqtSignal('QVariantList') # 位置搜尋結果
+    homeLocationLoaded = pyqtSignal('QVariantMap')   # 通知 QML 目前已儲存的位置
 
     def __init__(self, state: AppState, camera: CameraService):
         super().__init__()
@@ -59,6 +63,7 @@ class Backend(QObject):
         if mode != "idle":
             self.fetch_youbike()
             self.fetch_calendar(users)
+            self.fetch_recommendation()
 
     # ── 給 QML 呼叫的函式 (Slots) ──
 
@@ -163,6 +168,42 @@ class Backend(QObject):
         def _do(): self.youbikeSearchResults.emit(settings_service.search_youbike_stations(query))
         threading.Thread(target=_do, daemon=True).start()
 
+    # ── 推薦站點 (Recommendation) ──
+
+    @pyqtSlot()
+    def fetch_recommendation(self):
+        """非同步取得附近最推薦的 YouBike 站點"""
+        def _do():
+            loc = settings_service.get_home_location()
+            if not loc:
+                return
+            result = fetch_recommendation(loc["lat"], loc["lng"])
+            if result:
+                self.recommendationUpdated.emit(result)
+            else:
+                self.recommendationUpdated.emit({})
+        threading.Thread(target=_do, daemon=True).start()
+
+    @pyqtSlot(float, float, str)
+    def save_home_location(self, lat: float, lng: float, name: str):
+        """儲存使用者主要位置，並立刻觸發推薦更新"""
+        settings_service.set_home_location(lat, lng, name)
+        self.fetch_recommendation()
+
+    @pyqtSlot()
+    def load_home_location(self):
+        """讀取儲存的位置並通知 QML"""
+        loc = settings_service.get_home_location()
+        self.homeLocationLoaded.emit(loc if loc else {})
+
+    @pyqtSlot(str)
+    def search_home_location(self, query: str):
+        """搜尋地點名稱（Nominatim）並回傳候選座標"""
+        def _do():
+            self.homeLocationSearchResults.emit(settings_service.search_home_location(query))
+        threading.Thread(target=_do, daemon=True).start()
+
+
     @pyqtSlot(int)
     def test_camera(self, idx: int):
         """進入相機預覽模式"""
@@ -205,6 +246,8 @@ def main():
         
     # 一啟動就先抓一次天氣
     backend.fetch_weather()
+    # 通知 QML 目前儲存的位置（供 LocationSetupDialog 判斷是否需要引導設定）
+    backend.load_home_location()
     
     # 進入主迴圈，直到視窗關閉
     res = app.exec()
