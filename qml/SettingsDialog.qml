@@ -263,7 +263,7 @@ Popup {
                         Repeater {
                             model: weatherLocations
                             Button {
-                                text: modelData.name + ", " + (modelData.country || "") + "  ✕"
+                                text: modelData.name + (modelData.country ? ", " + modelData.country : "") + "  ✕"
                                 onClicked: {
                                     var arr = weatherLocations.slice();
                                     arr.splice(index, 1);
@@ -328,7 +328,7 @@ Popup {
                                 width: ListView.view ? ListView.view.width : 0
                                 height: 30
                                 contentItem: Text {
-                                    text: modelData.name
+                                    text: modelData.full_name || modelData.name || ""
                                     color: "white"
                                     verticalAlignment: Text.AlignVCenter
                                 }

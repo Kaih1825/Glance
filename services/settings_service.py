@@ -115,13 +115,20 @@ def search_weather_location(query: str) -> list[dict]:
             raw_name = r.get("display_name", "")
             # 取出各部分，並過濾掉「臺灣」以節省顯示空間
             parts = [p.strip() for p in raw_name.split(",")]
-            parts = [p for p in parts if p not in ("臺灣", "Taiwan")]
-            name = ", ".join(parts) if parts else raw_name
+            parts = [p for p in parts if p not in ("臺灣", "台灣", "Taiwan")]
+            full_name = ", ".join(parts) if parts else raw_name
+            short_name = parts[0] if parts else raw_name
+
+            country = addr.get("country", "")
+            if country in ("臺灣", "台灣", "Taiwan"):
+                country = ""
                 
-            if name and name not in seen_names:
-                seen_names.add(name)
+            if short_name and short_name not in seen_names:
+                seen_names.add(short_name)
                 results.append({
-                    "name": name,
+                    "name": short_name,
+                    "full_name": full_name,
+                    "country": country,
                     "lat": float(r.get("lat")),
                     "lon": float(r.get("lon"))
                 })
@@ -162,3 +169,87 @@ def set_home_location(lat: float, lng: float, name: str) -> None:
 def search_home_location(query: str) -> list[dict]:
     """搜尋位置以取得 GPS 座標（共用天氣地點搜尋邏輯）"""
     return search_weather_location(query)
+
+def _fetch_nearby_youbike(lat: float, lng: float, limit: int = 6) -> list[dict]:
+    try:
+        import math
+        def _haversine(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+            R = 6_371_000
+            phi1, phi2 = math.radians(lat1), math.radians(lat2)
+            dphi = math.radians(lat2 - lat1)
+            dlambda = math.radians(lng2 - lng1)
+            a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+            return 2 * R * math.asin(math.sqrt(a))
+
+        resp = requests.post(
+            "https://apis.youbike.com.tw/tw2/parkingInfo",
+            data={"lat": lat, "lng": lng, "maxDistance": 1000},
+            headers={
+                "User-Agent": "Mozilla/5.0",
+                "Origin": "https://www.youbike.com.tw",
+                "Referer": "https://www.youbike.com.tw/"
+            },
+            timeout=8,
+        )
+        resp.raise_for_status()
+        data_res = resp.json()
+
+        if data_res.get("retCode") == 1:
+            retVal = data_res.get("retVal", [])
+            if isinstance(retVal, list):
+                stations = retVal
+            elif isinstance(retVal, dict):
+                stations = retVal.get("data", [])
+            else:
+                stations = []
+
+            if stations:
+                for st in stations:
+                    st["_dist"] = _haversine(lat, lng, float(st.get("lat", 0)), float(st.get("lng", 0)))
+                
+                stations.sort(key=lambda x: x["_dist"])
+                top_k = stations[:limit]
+
+                all_stations = _fetch_all_youbike_stations()
+                default_yb = []
+                for st in top_k:
+                    sno = str(st.get("station_no", ""))
+                    sna = sno
+                    sarea = ""
+                    if all_stations:
+                        matched = next((s for s in all_stations if str(s.get("station_no", "")) == sno), None)
+                        if matched:
+                            sna = matched.get("name_tw", sno)
+                            sarea = matched.get("district_tw", "")
+                    default_yb.append({
+                        "sno": sno,
+                        "sna": sna,
+                        "sarea": sarea
+                    })
+
+                return default_yb
+    except Exception as e:
+        print(f"Error fetching nearby YouBike stations: {e}")
+    return []
+
+def init_default_data() -> None:
+    """若資料庫沒有天氣與 YouBike 站點，且有設定主要地點，則預設帶入"""
+    home_loc = get_home_location()
+    if not home_loc:
+        return
+
+    # 初始化天氣地點
+    w_locs = get_weather_locations()
+    if not w_locs:
+        set_weather_locations([{
+            "name": home_loc["name"],
+            "lat": home_loc["lat"],
+            "lon": home_loc["lng"]
+        }])
+
+    # 初始化 YouBike 站點
+    b_locs = get_youbike_stations()
+    if not b_locs:
+        stations = _fetch_nearby_youbike(home_loc["lat"], home_loc["lng"])
+        if stations:
+            set_youbike_stations(stations)

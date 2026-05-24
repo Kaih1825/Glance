@@ -10,6 +10,14 @@ Column {
 
     spacing: 6
 
+    property bool fetchingWeather: false
+    property bool fetchingYoubike: false
+    property bool fetchingRecommendation: false
+
+    function checkSpinning() {
+        refreshBtn.spinning = fetchingWeather || fetchingYoubike || fetchingRecommendation;
+    }
+
     // ── 重整按鈕 ── 對齊 cards 右邊緣
     Item {
         width: weatherRoot.targetAvailableWidth
@@ -21,7 +29,6 @@ Column {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             onClicked: {
-                spinning = true;
                 backend.fetch_weather();
                 if (weatherRoot.isRightPanelOpened) {
                     backend.fetch_youbike();
@@ -133,9 +140,30 @@ Column {
 
     Connections {
         target: backend
+        function onWeatherFetchStarted() {
+            weatherRoot.fetchingWeather = true;
+            weatherRoot.checkSpinning();
+        }
+        function onYoubikeFetchStarted() {
+            weatherRoot.fetchingYoubike = true;
+            weatherRoot.checkSpinning();
+        }
+        function onRecommendationFetchStarted() {
+            weatherRoot.fetchingRecommendation = true;
+            weatherRoot.checkSpinning();
+        }
         function onWeatherUpdated(data) {
             weatherRepeater.model = data;
-            refreshBtn.spinning = false;
+            weatherRoot.fetchingWeather = false;
+            weatherRoot.checkSpinning();
+        }
+        function onYoubikeUpdated(data) {
+            weatherRoot.fetchingYoubike = false;
+            weatherRoot.checkSpinning();
+        }
+        function onRecommendationUpdated(data) {
+            weatherRoot.fetchingRecommendation = false;
+            weatherRoot.checkSpinning();
         }
     }
 

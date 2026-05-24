@@ -11,9 +11,9 @@ Item {
 
     onSpinningChanged: {
         if (spinning) {
-            bounceAnim.restart();
+            spinAnim.restart();
         } else {
-            bounceAnim.stop();
+            spinAnim.stop();
             iconText.rotation = 0;
         }
     }
@@ -31,24 +31,14 @@ Item {
             ColorAnimation { duration: 120 }
         }
 
-        SequentialAnimation {
-            id: bounceAnim
-            loops: 1
-
-            RotationAnimation {
-                target: iconText
-                from: 0
-                to: 45
-                duration: 180
-                easing.type: Easing.OutQuad
-            }
-            RotationAnimation {
-                target: iconText
-                from: 45
-                to: 0
-                duration: 180
-                easing.type: Easing.InQuad
-            }
+        RotationAnimation {
+            id: spinAnim
+            target: iconText
+            from: 0
+            to: 360
+            duration: 800
+            loops: Animation.Infinite
+            easing.type: Easing.Linear
         }
     }
 

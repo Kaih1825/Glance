@@ -12,6 +12,7 @@ Popup {
 
     property bool hasExistingLocation: false
     property var searchResults: []
+    property var selectedLocation: null
 
     enter: Transition {
         ParallelAnimation {
@@ -50,10 +51,10 @@ Popup {
         }
     }
 
-    // 開啟時清空搜尋
     onOpened: {
         root.searchResults = [];
         searchField.text = "";
+        root.selectedLocation = null;
     }
 
     background: Rectangle {
@@ -73,6 +74,7 @@ Popup {
         function onHomeLocationSearchResults(res) {
             root.searchResults = [];
             root.searchResults = res;
+            root.selectedLocation = null;
         }
     }
 
@@ -126,6 +128,7 @@ Popup {
             height: 1
             color: "#1EFFFFFF"
         }
+
 
         // ── 搜尋輸入 ──
         RowLayout {
@@ -221,7 +224,7 @@ Popup {
                     height: 44
 
                     background: Rectangle {
-                        color: parent.hovered ? "#18FFFFFF" : "transparent"
+                        color: root.selectedLocation === modelData ? "#3D6BA8" : (parent.hovered ? "#18FFFFFF" : "transparent")
                         radius: 8
                         Behavior on color {
                             ColorAnimation {
@@ -242,7 +245,7 @@ Popup {
                             Layout.fillWidth: true
                             spacing: 2
                             Text {
-                                text: modelData.name || ""
+                                text: modelData.full_name || modelData.name || ""
                                 color: "white"
                                 font.pixelSize: 13
                                 elide: Text.ElideRight
@@ -263,17 +266,105 @@ Popup {
                     }
 
                     onClicked: {
-                        // 點選搜尋結果直接儲存並關閉
-                        backend.save_home_location(modelData.lat, modelData.lon, modelData.name);
-                        root.close();
+                        root.selectedLocation = modelData;
+                        searchField.text = modelData.full_name || modelData.name || "";
+                        root.searchResults = [];
                     }
                 }
             }
         }
 
-        // 吸震元件：吸收剩下的垂直空間，讓上方元件能往上靠齊
+        // 吸震元件
         Item {
             Layout.fillHeight: true
+        }
+
+        // ── 快速動作 ──
+        RowLayout {
+            Layout.alignment: Qt.AlignRight
+            visible: root.selectedLocation !== null
+            spacing: 6
+
+            Button {
+                text: "清除並加附近 YouBike"
+                padding: 6
+                onClicked: { backend.action_replace_youbike(root.selectedLocation.lat, root.selectedLocation.lon); }
+                background: Rectangle {
+                    color: parent.pressed ? "#3C4C33" : "#2E3B28"
+                    border.color: "#44FFFFFF"
+                    border.width: 1
+                    radius: 6
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    font.pixelSize: 11
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+
+            Button {
+                text: "加附近 YouBike"
+                padding: 6
+                onClicked: { backend.action_add_youbike(root.selectedLocation.lat, root.selectedLocation.lon); }
+                background: Rectangle {
+                    color: parent.pressed ? "#3C4C33" : "#2E3B28"
+                    border.color: "#44FFFFFF"
+                    border.width: 1
+                    radius: 6
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    font.pixelSize: 11
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+
+            Button {
+                text: "加天氣"
+                padding: 6
+                onClicked: { backend.action_add_weather(root.selectedLocation.lat, root.selectedLocation.lon, root.selectedLocation.name); }
+                background: Rectangle {
+                    color: parent.pressed ? "#334460" : "#24324C"
+                    border.color: "#44FFFFFF"
+                    border.width: 1
+                    radius: 6
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    font.pixelSize: 11
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+        }
+
+        // ── 儲存按鈕 ──
+        Button {
+            text: "儲存"
+            Layout.fillWidth: true
+            enabled: root.selectedLocation !== null
+            opacity: enabled ? 1.0 : 0.5
+            padding: 12
+            onClicked: {
+                if (root.selectedLocation) {
+                    backend.save_home_location(root.selectedLocation.lat, root.selectedLocation.lon, root.selectedLocation.name);
+                    root.close();
+                }
+            }
+            background: Rectangle {
+                color: parent.pressed ? "#5C7FB8" : "#3D6BA8"
+                radius: 8
+                Behavior on color { ColorAnimation { duration: 100 } }
+            }
+            contentItem: Text {
+                text: parent.text
+                color: "white"
+                font.pixelSize: 14
+                font.weight: Font.DemiBold
+                horizontalAlignment: Text.AlignHCenter
+            }
         }
     }
 }

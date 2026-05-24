@@ -37,6 +37,10 @@ class Backend(QObject):
     youbikeUpdated = pyqtSignal('QVariantList')      # 通知 YouBike 資料已更新
     calendarUpdated = pyqtSignal('QVariantList')     # 通知行事曆資料已更新
     
+    weatherFetchStarted = pyqtSignal()
+    youbikeFetchStarted = pyqtSignal()
+    recommendationFetchStarted = pyqtSignal()
+    
     weatherSearchResults = pyqtSignal('QVariantList')# 通知天氣搜尋結果
     youbikeSearchResults = pyqtSignal('QVariantList')# 通知 YouBike 搜尋結果
     settingsLoaded = pyqtSignal('QVariantList', 'QVariantList', int, 'QVariantList') # 載入設定
@@ -88,11 +92,13 @@ class Backend(QObject):
     @pyqtSlot()
     def fetch_weather(self):
         """非同步抓取天氣，避免卡住畫面"""
+        self.weatherFetchStarted.emit()
         threading.Thread(target=lambda: self.weatherUpdated.emit(fetch_weather()), daemon=True).start()
 
     @pyqtSlot()
     def fetch_youbike(self):
         """非同步抓取 YouBike，避免卡住畫面"""
+        self.youbikeFetchStarted.emit()
         threading.Thread(target=lambda: self.youbikeUpdated.emit(fetch_youbike()), daemon=True).start()
         
     def fetch_calendar(self, users: list[str]):
@@ -150,6 +156,7 @@ class Backend(QObject):
     @pyqtSlot()
     def fetch_recommendation(self):
         """非同步取得附近最推薦的 YouBike 站點"""
+        self.recommendationFetchStarted.emit()
         def _do():
             loc = settings_service.get_home_location()
             result = fetch_recommendation(loc["lat"], loc["lng"]) if loc else None
@@ -160,7 +167,11 @@ class Backend(QObject):
     def save_home_location(self, lat: float, lng: float, name: str):
         """儲存使用者主要位置，並立刻觸發推薦更新"""
         settings_service.set_home_location(lat, lng, name)
+        settings_service.init_default_data()
         self.fetch_recommendation()
+        self.fetch_weather()
+        if self.state.mode != "idle":
+            self.fetch_youbike()
 
     @pyqtSlot()
     def load_home_location(self):
@@ -172,6 +183,67 @@ class Backend(QObject):
     def search_home_location(self, query: str):
         """搜尋地點名稱（Nominatim）並回傳候選座標"""
         threading.Thread(target=lambda: self.homeLocationSearchResults.emit(settings_service.search_home_location(query)), daemon=True).start()
+
+    @pyqtSlot(float, float)
+    def action_replace_youbike(self, lat: float = 0.0, lng: float = 0.0):
+        """清除已儲存的Youbike站點，加入附近的Youbike站點"""
+        def _do():
+            nonlocal lat, lng
+            if lat == 0.0 and lng == 0.0:
+                loc = settings_service.get_home_location()
+                if not loc: return
+                lat, lng = loc["lat"], loc["lng"]
+            
+            stations = settings_service._fetch_nearby_youbike(lat, lng)
+            if stations:
+                settings_service.set_youbike_stations(stations)
+                self.fetch_youbike()
+                self.load_settings()
+        threading.Thread(target=_do, daemon=True).start()
+
+    @pyqtSlot(float, float)
+    def action_add_youbike(self, lat: float = 0.0, lng: float = 0.0):
+        """加入附近的Youbike站點"""
+        def _do():
+            nonlocal lat, lng
+            if lat == 0.0 and lng == 0.0:
+                loc = settings_service.get_home_location()
+                if not loc: return
+                lat, lng = loc["lat"], loc["lng"]
+                
+            stations = settings_service._fetch_nearby_youbike(lat, lng)
+            if stations:
+                existing = settings_service.get_youbike_stations()
+                existing_snos = {s["sno"] for s in existing}
+                for s in stations:
+                    if s["sno"] not in existing_snos:
+                        existing.append(s)
+                settings_service.set_youbike_stations(existing)
+                self.fetch_youbike()
+                self.load_settings()
+        threading.Thread(target=_do, daemon=True).start()
+
+    @pyqtSlot(float, float, str)
+    def action_add_weather(self, lat: float = 0.0, lng: float = 0.0, name: str = ""):
+        """加入天氣站點"""
+        def _do():
+            nonlocal lat, lng, name
+            if lat == 0.0 and lng == 0.0:
+                loc = settings_service.get_home_location()
+                if not loc: return
+                lat, lng, name = loc["lat"], loc["lng"], loc["name"]
+                
+            w_locs = settings_service.get_weather_locations()
+            if not any(w["lat"] == lat and w["lon"] == lng for w in w_locs):
+                w_locs.append({
+                    "name": name,
+                    "lat": lat,
+                    "lon": lng
+                })
+                settings_service.set_weather_locations(w_locs)
+                self.fetch_weather()
+                self.load_settings()
+        threading.Thread(target=_do, daemon=True).start()
 
 
     @pyqtSlot(int)
@@ -194,6 +266,7 @@ def main():
     
     # 初始化資料庫與狀態
     init_db()
+    settings_service.init_default_data()
     state = AppState()
     
     # 啟動相機背景服務
