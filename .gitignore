@@ -9,9 +9,23 @@ wheels/
 # Virtual environments
 .venv
 
-face_db
-entryway.db
-
 # Database and User Data
 face_db/
 entryway.db
+*.db
+*.sqlite3
+youbike_stations_cache.json
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
