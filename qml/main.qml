@@ -163,6 +163,49 @@ ApplicationWindow {
         }
     }
 
+    Popup {
+        id: modelDownloadPopup
+        anchors.centerIn: parent
+        width: 320
+        height: 180
+        modal: true
+        closePolicy: Popup.NoAutoClose
+        
+        background: Rectangle {
+            color: "#E6000000"
+            radius: 24
+            border.color: "#33FFFFFF"
+        }
+        
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 24
+            spacing: 16
+            
+            BusyIndicator {
+                Layout.alignment: Qt.AlignHCenter
+                running: true
+                palette.dark: "white"
+            }
+            
+            Text {
+                text: "正在下載 AI 模型..."
+                color: "white"
+                font.pixelSize: 18
+                font.weight: Font.DemiBold
+                Layout.alignment: Qt.AlignHCenter
+            }
+            
+            Text {
+                text: "初次啟動需要數分鐘下載人臉辨識模型\n請耐心等候，下載完成後會自動關閉"
+                color: "#89FFFFFF"
+                font.pixelSize: 13
+                horizontalAlignment: Text.AlignHCenter
+                Layout.alignment: Qt.AlignHCenter
+            }
+        }
+    }
+
     Connections {
         target: backend
         function onModeChanged(mode, users) {
@@ -195,6 +238,12 @@ ApplicationWindow {
                 locationSetupDialog.hasExistingLocation = false;
                 locationSetupDialog.open();
             }
+        }
+        function onModelDownloadStarted() {
+            modelDownloadPopup.open();
+        }
+        function onModelDownloadDone() {
+            modelDownloadPopup.close();
         }
     }
 

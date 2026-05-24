@@ -54,6 +54,19 @@ class CameraService:
         """主要的攝影機執行迴圈"""
         from services.settings_service import get_camera_index
         
+        # 檢查是否需要下載模型 (第一次啟動)
+        weights_dir = os.path.join(os.path.expanduser("~"), ".deepface", "weights")
+        has_arcface = os.path.exists(os.path.join(weights_dir, "arcface_weights.h5"))
+        has_retinaface = os.path.exists(os.path.join(weights_dir, "retinaface.h5"))
+        if not has_arcface or not has_retinaface:
+            self._state.model_download_started.emit()
+            try:
+                from deepface import DeepFace
+                DeepFace.build_model("ArcFace")
+            except Exception as e:
+                logger.error(f"Download model error: {e}")
+            self._state.model_download_done.emit()
+        
         # 開啟攝影機
         self._cap = cv2.VideoCapture(get_camera_index())
 

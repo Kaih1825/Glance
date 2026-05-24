@@ -38,6 +38,8 @@ class Backend(QObject):
     modeChanged = pyqtSignal(str, 'QVariantList')    # 通知模式改變 (閒置/訪客/已辨識使用者)
     rebuildStarted = pyqtSignal()                    # 通知開始重建人臉資料庫
     rebuildDone = pyqtSignal()                       # 通知重建結束
+    modelDownloadStarted = pyqtSignal()              # 通知開始下載模型
+    modelDownloadDone = pyqtSignal()                 # 通知下載結束
     
     weatherUpdated = pyqtSignal('QVariantList')      # 通知天氣資料已更新
     youbikeUpdated = pyqtSignal('QVariantList')      # 通知 YouBike 資料已更新
@@ -65,6 +67,8 @@ class Backend(QObject):
         self.state.mode_changed.connect(self._on_mode_change)
         self.state.rebuild_started.connect(self.rebuildStarted.emit)
         self.state.rebuild_done.connect(self.rebuildDone.emit)
+        self.state.model_download_started.connect(self.modelDownloadStarted.emit)
+        self.state.model_download_done.connect(self.modelDownloadDone.emit)
         self.state.preview_frame.connect(self.previewFrame.emit)
 
     def _on_mode_change(self, mode: str, users: list[str]):

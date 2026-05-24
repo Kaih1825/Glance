@@ -12,6 +12,8 @@ class AppState(QObject):
     rebuild_started = pyqtSignal()         # 臉部特徵庫開始重建
     rebuild_done = pyqtSignal()            # 臉部特徵庫重建完成
     preview_frame = pyqtSignal(str)        # 傳遞預覽畫面給 UI (base64)
+    model_download_started = pyqtSignal()  # 模型下載開始
+    model_download_done = pyqtSignal()     # 模型下載結束
 
     def __init__(self):
         super().__init__()
