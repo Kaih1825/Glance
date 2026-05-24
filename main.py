@@ -288,9 +288,8 @@ def main():
     settings_service.init_default_data()
     state = AppState()
     
-    # 啟動相機背景服務
+    # 初始化相機服務 (但先不要 start，等 UI 載入完畢後再啟動)
     camera = CameraService(state=state)
-    camera.start()
     
     # 建立連接 UI 與 Python 的橋樑
     backend = Backend(state, camera)
@@ -310,6 +309,9 @@ def main():
     backend.fetch_weather()
     # 通知 QML 目前儲存的位置（供 LocationSetupDialog 判斷是否需要引導設定）
     backend.load_home_location()
+    
+    # 啟動相機背景服務 (延後到 UI 載入完畢後才啟動，確保能收到下載模型的訊號)
+    camera.start()
     
     # 進入主迴圈，直到視窗關閉
     res = app.exec()
