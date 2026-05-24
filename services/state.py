@@ -19,7 +19,6 @@ class AppState(QObject):
         self.identified_users = []        # 辨識出來的使用者名單
 
         # 用於與背景攝影機執行緒溝通的變數
-        self.force_rescan = threading.Event()
         self.register_flag = (False, "")
         self.register_lock = threading.Lock()
 
@@ -44,6 +43,3 @@ class AppState(QObject):
             self.register_flag = (False, "")
             return flag
 
-    def trigger_rescan(self) -> None:
-        """強制攝影機重新掃描人臉"""
-        self.force_rescan.set()

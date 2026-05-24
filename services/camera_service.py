@@ -73,17 +73,12 @@ class CameraService:
                         self._cap.release()
                     target_idx = self._preview_idx if self._preview_idx is not None else get_camera_index()
                     self._cap = cv2.VideoCapture(target_idx)
-                    self._state.force_rescan.set() # 切換相機後強制重新掃描
+                    self._last_face_time = 0.0 # 切換相機後重設時間戳記，讓狀態重新計算
                     
                 if not self._cap or not self._cap.isOpened():
                     # 找不到攝影機就休息一下 (避免無窮迴圈吃CPU)
                     time.sleep(1.0)
                     continue
-
-                # 處理「重新辨識」的請求
-                if self._state.force_rescan.is_set():
-                    self._state.force_rescan.clear()
-                    self._last_face_time = 0.0
 
                 # 處理「註冊新人員」的請求
                 active, user_id = self._state.consume_register_flag()
@@ -112,8 +107,9 @@ class CameraService:
                     continue
 
                 # 階段一：使用快速的 OpenCV 偵測是否有人臉
+                # 放寬條件：降低 minNeighbors 和 minSize，避免光線稍微不好時直接把畫面丟棄
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                faces = self._cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
+                faces = self._cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(40, 40))
 
                 if len(faces) == 0:
                     time.sleep(_LOOP_INTERVAL)
@@ -150,7 +146,7 @@ class CameraService:
             results = DeepFace.find(
                 img_path=frame, db_path=FACE_DB_DIR,
                 model_name="ArcFace", detector_backend="retinaface",
-                anti_spoofing=False, enforce_detection=False, silent=True
+                anti_spoofing=False, enforce_detection=True, silent=True
             )
 
             from services import database
@@ -182,6 +178,12 @@ class CameraService:
             database.add_user(user_uuid, user_id)
             logger.info(f"為新人員建立 UUID 對應: {user_id} -> {user_uuid}")
         
+        # 給使用者一點時間抬頭看鏡頭，避免拍到按滑鼠時的低頭/模糊畫面
+        time.sleep(1.5)
+        # 清空 OpenCV 的影像暫存區 (buffer 裡通常有幾張舊的 frame)
+        for _ in range(5):
+            self._cap.read()
+            
         ret, frame = self._cap.read()
         if ret:
             # 1. 建立資料夾並儲存照片
@@ -197,7 +199,7 @@ class CameraService:
             # 3. 呼叫 find 強制 DeepFace 重新學習一次資料庫
             try:
                 from deepface import DeepFace
-                DeepFace.find(img_path=frame, db_path=FACE_DB_DIR, enforce_detection=False, silent=True)
+                DeepFace.find(img_path=frame, db_path=FACE_DB_DIR, enforce_detection=True, silent=True)
             except Exception:
                 pass
                 

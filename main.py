@@ -49,7 +49,6 @@ class Backend(QObject):
         super().__init__()
         self.state = state
         self.camera = camera
-        self._demo_active = False
         
         # 綁定：當後台 state 改變時，觸發我們自己定義的訊號給 QML
         self.state.mode_changed.connect(self._on_mode_change)
@@ -66,12 +65,6 @@ class Backend(QObject):
             self.fetch_recommendation()
 
     # ── 給 QML 呼叫的函式 (Slots) ──
-
-    @pyqtSlot()
-    def trigger_rescan(self):
-        """從 UI 按下「重新辨識」"""
-        self.state.set_mode("idle")
-        self.state.trigger_rescan()
 
     @pyqtSlot(str)
     def register_user(self, user_id: str):
@@ -91,14 +84,6 @@ class Backend(QObject):
         """取得所有註冊使用者"""
         return database.get_all_user_names()
 
-    @pyqtSlot()
-    def toggle_demo(self):
-        """開啟/關閉模擬測試模式"""
-        self._demo_active = not self._demo_active
-        if self._demo_active:
-            self.state.set_mode("users", ["jason", "mark"])
-        else:
-            self.state.set_mode("idle")
 
     @pyqtSlot()
     def fetch_weather(self):

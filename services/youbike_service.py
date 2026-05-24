@@ -3,7 +3,7 @@ services/youbike_service.py
 負責抓取 YouBike 2.0 即時站點資訊。
 """
 import requests
-from services.settings_service import get_youbike_stations, get_default_youbike_stations
+from services.settings_service import get_youbike_stations
 
 _YOUBIKE_API = "https://apis.youbike.com.tw/tw2/parkingInfo"
 
@@ -11,11 +11,6 @@ def fetch_youbike() -> list[dict]:
     print("Youbike")
     """抓取設定好的 YouBike 站點狀態（包含可借車輛、空位數量，區分 YouBike 2.0 / 2.0e）。"""
     saved = get_youbike_stations()
-    
-    # 如果資料庫沒有最愛站點，從官方列表抓取前 5 個作為 Demo (使用快取避免重複下載 3.9MB 檔案)
-    if not saved:
-        saved = get_default_youbike_stations()
-
     if not saved:
         return []
 

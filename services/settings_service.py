@@ -75,19 +75,6 @@ def set_youbike_stations(stations: list[dict]):
             })
     set_setting("youbike_stations", cleaned)
 
-def get_default_youbike_stations() -> list[dict]:
-    """取得預設的 YouBike 站點 (Demo 用，取前5個)"""
-    stations = _fetch_all_youbike_stations()
-    if not stations:
-        return []
-    return [
-        {
-            "sno": s.get("station_no"),
-            "sna": s.get("name_tw"),
-            "sarea": s.get("district_tw")
-        }
-        for s in stations[:5]
-    ]
 
 # ── 攝影機設定 ──
 def get_camera_index() -> int:

@@ -73,22 +73,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignRight
                 spacing: 10
                 
-                Button {
-                    text: "重新辨識"
-                    onClicked: backend.trigger_rescan()
-                    background: Rectangle {
-                        color: parent.pressed ? "#4CFFFFFF" : "#33FFFFFF"
-                        radius: 8
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: "white"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    padding: 8
-                }
-                
+
                 Button {
                     id: registerNewUserButton
                     onClicked: openRegisterDialog()

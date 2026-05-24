@@ -104,37 +104,6 @@ ApplicationWindow {
             }
 
             RoundButton {
-                id: demoButton
-                width: parent.buttonSize
-                height: parent.buttonSize
-                scale: pressed ? 0.9 : 1.0
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: 150
-                        easing.type: Easing.OutCubic
-                    }
-                }
-                contentItem: Text {
-                    text: "\ue87c"
-                    font.family: "Material Icons"
-                    font.pixelSize: 24
-                    color: "white"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                background: Rectangle {
-                    radius: width / 2
-                    color: parent.pressed ? "#66FFFFFF" : (parent.hovered ? "#4CFFFFFF" : "#33FFFFFF")
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                }
-                onClicked: backend.toggle_demo()
-            }
-
-            RoundButton {
                 id: registerButton
                 width: parent.buttonSize
                 height: parent.buttonSize

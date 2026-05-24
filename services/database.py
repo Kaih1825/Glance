@@ -5,7 +5,6 @@ services/database.py
 import sqlite3
 import json
 import os
-from datetime import datetime, timedelta
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "entryway.db")
 
@@ -16,7 +15,7 @@ def _get_conn():
     return conn
 
 def init_db() -> None:
-    """初始化資料庫與資料表，若無資料則建立預設 Demo 資料"""
+    """初始化資料庫與資料表"""
     conn = _get_conn()
     cur = conn.cursor()
     
@@ -40,25 +39,8 @@ def init_db() -> None:
         );
     """)
     conn.commit()
-
-    # 寫入行行曆 Demo 資料
-    if cur.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 0:
-        _seed_demo_data(cur)
-        conn.commit()
     conn.close()
 
-def _seed_demo_data(cur) -> None:
-    """產生幾筆假行事曆資料供展示使用"""
-    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    events = [
-        ("社區公告：電梯維修", today + timedelta(hours=9), today + timedelta(hours=11), "public", None),
-        ("牙醫預約", today + timedelta(days=1, hours=14), today + timedelta(days=1, hours=15), "private", "jason"),
-        ("健身房", today + timedelta(hours=7), today + timedelta(hours=8), "private", "mark"),
-    ]
-    cur.executemany(
-        "INSERT INTO events (title, start_dt, end_dt, visibility, owner_id) VALUES (?,?,?,?,?)",
-        [(t, s.isoformat(), e.isoformat(), v, o) for t, s, e, v, o in events],
-    )
 
 def get_events(user_ids: list[str]) -> list[dict]:
     """根據辨識出的使用者，回傳他們有權限看到的行事曆事件"""
