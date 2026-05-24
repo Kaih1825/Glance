@@ -62,7 +62,14 @@ class CameraService:
             self._state.model_download_started.emit()
             try:
                 from deepface import DeepFace
+                # 下載人臉特徵比對模型 (ArcFace)
                 DeepFace.build_model("ArcFace")
+                
+                # 下載人臉偵測模型 (retinaface)
+                # 最穩妥的做法是餵給它一張黑圖，強制它載入/下載偵測器
+                import numpy as np
+                dummy_img = np.zeros((224, 224, 3), dtype=np.uint8)
+                DeepFace.extract_faces(img_path=dummy_img, detector_backend="retinaface", enforce_detection=False)
             except Exception as e:
                 logger.error(f"Download model error: {e}")
             self._state.model_download_done.emit()
