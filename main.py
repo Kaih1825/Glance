@@ -5,6 +5,12 @@ main.py
 """
 import sys
 import os
+
+# 隱藏 TensorFlow 與 oneDNN 的各種底層警告與提示訊息，必須在 import deepface 或 tensorflow 之前設定
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+os.environ['OPENCV_LOG_LEVEL'] = 'FATAL'
+
 import threading
 from pathlib import Path
 
