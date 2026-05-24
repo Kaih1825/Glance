@@ -76,8 +76,14 @@ class CameraService:
                     self._last_face_time = 0.0 # 切換相機後重設時間戳記，讓狀態重新計算
                     
                 if not self._cap or not self._cap.isOpened():
-                    # 找不到攝影機就休息一下 (避免無窮迴圈吃CPU)
+                    # 找不到攝影機就休息一下 (避免無窮迴圈吃CPU)，並每 5 秒嘗試重新連線一次
                     time.sleep(1.0)
+                    if time.monotonic() - getattr(self, '_last_retry_time', 0) > 5.0:
+                        self._last_retry_time = time.monotonic()
+                        if self._cap:
+                            self._cap.release()
+                        target_idx = self._preview_idx if self._preview_idx is not None else get_camera_index()
+                        self._cap = cv2.VideoCapture(target_idx)
                     continue
 
                 # 處理「註冊新人員」的請求

@@ -8,7 +8,7 @@ ApplicationWindow {
     width: 1200
     height: 700
     title: "玄關智慧中樞"
-    color: '#c90d1117'
+    color: '#0D1117'
     minimumWidth: 1000
     minimumHeight: 700
 
