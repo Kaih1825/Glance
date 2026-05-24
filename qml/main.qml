@@ -166,8 +166,9 @@ ApplicationWindow {
     Popup {
         id: modelDownloadPopup
         anchors.centerIn: parent
-        width: 320
-        height: 180
+        width: 420
+        height: 220
+        padding: 32
         modal: true
         closePolicy: Popup.NoAutoClose
         
@@ -177,9 +178,7 @@ ApplicationWindow {
             border.color: "#33FFFFFF"
         }
         
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 24
+        contentItem: ColumnLayout {
             spacing: 16
             
             BusyIndicator {
@@ -191,17 +190,20 @@ ApplicationWindow {
             Text {
                 text: "正在下載 AI 模型..."
                 color: "white"
-                font.pixelSize: 18
+                font.pixelSize: 20
                 font.weight: Font.DemiBold
                 Layout.alignment: Qt.AlignHCenter
             }
             
             Text {
-                text: "初次啟動需要數分鐘下載人臉辨識模型\n請耐心等候，下載完成後會自動關閉"
+                text: "初次啟動需要數分鐘下載人臉辨識模型，請耐心等候，下載完成後會自動關閉。"
                 color: "#89FFFFFF"
-                font.pixelSize: 13
+                font.pixelSize: 14
+                wrapMode: Text.WordWrap
                 horizontalAlignment: Text.AlignHCenter
+                Layout.fillWidth: true
                 Layout.alignment: Qt.AlignHCenter
+                lineHeight: 1.4
             }
         }
     }
