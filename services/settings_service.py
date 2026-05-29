@@ -93,7 +93,13 @@ def get_available_cameras() -> list[str]:
         pass
 
     if count == 0:
-        count = 5
+        import cv2
+        # 若 Qt 無法偵測，嘗試使用 OpenCV 實際開啟相機 0 來確認是否存在
+        cap = cv2.VideoCapture(0)
+        if cap is not None and cap.isOpened():
+            count = 1
+            cap.release()
+
     return [f"相機 {i}" for i in range(count)]
 
 # ── 搜尋 API ──
