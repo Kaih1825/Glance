@@ -24,11 +24,14 @@ Item {
     // 推薦資料
     property var stationData: null
     property bool loading: false
+    property bool showNotFound: false
 
     // 當 Right Panel 開啟/收起時觸發
     onIsRightPanelOpenedChanged: {
         if (isRightPanelOpened) {
             clearTimer.stop();
+            notFoundTimer.stop();
+            showNotFound = false;
             stationData = null;
             loading = true;
             backend.fetch_recommendation();
@@ -46,11 +49,25 @@ Item {
         onTriggered: recommendRoot.stationData = null
     }
 
+    Timer {
+        id: notFoundTimer
+        interval: 5000
+        repeat: false
+        onTriggered: recommendRoot.showNotFound = false
+    }
+
     Connections {
         target: backend
         function onRecommendationUpdated(data) {
             loading = false;
             recommendRoot.stationData = (data && data.sno) ? data : null;
+            if (!recommendRoot.stationData) {
+                recommendRoot.showNotFound = true;
+                notFoundTimer.restart();
+            } else {
+                recommendRoot.showNotFound = false;
+                notFoundTimer.stop();
+            }
         }
     }
 
@@ -87,6 +104,41 @@ Item {
                 }
                 Text {
                     text: "正在尋找最佳 YouBike 站點…"
+                    color: "#89FFFFFF"
+                    font.pixelSize: 13
+                }
+            }
+        }
+
+        // ── 找不到站點 ──
+        Rectangle {
+            width: parent.width
+            height: recommendRoot.showNotFound ? 56 : 0
+            visible: height > 0
+            color: "#0AFFFFFF"
+            radius: 14
+            border.color: "#1EFFFFFF"
+            border.width: 1
+            clip: true
+
+            Behavior on height {
+                NumberAnimation {
+                    duration: 250
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            RowLayout {
+                anchors.centerIn: parent
+                spacing: 10
+                Text {
+                    text: "\ue000" // error_outline
+                    font.family: "Material Icons"
+                    font.pixelSize: 18
+                    color: "#89FFFFFF"
+                }
+                Text {
+                    text: "找不到附近 2km 內的 YouBike 站點"
                     color: "#89FFFFFF"
                     font.pixelSize: 13
                 }

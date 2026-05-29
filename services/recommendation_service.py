@@ -120,7 +120,7 @@ def fetch_recommendation(lat: float, lng: float) -> dict | None:
     try:
         resp = requests.post(
             _NEARBY_API,
-            data={"lat": lat, "lng": lng, "maxDistance": 800},
+            data={"lat": lat, "lng": lng, "maxDistance": 2000},
             headers=_HEADERS,
             timeout=8,
         )
@@ -142,6 +142,8 @@ def fetch_recommendation(lat: float, lng: float) -> dict | None:
         stations = retVal.get("data", [])
     else:
         stations = []
+
+    print(stations)
     if not stations:
         return None
 
