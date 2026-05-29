@@ -9,19 +9,35 @@ _WEATHER_API = "https://api.open-meteo.com/v1/forecast"
 
 # 簡單的 WMO 天氣代碼對應表 (Icon Codepoint, 中文描述, 顏色)
 _WMO_MAP = {
-    0: ("\ue430", "晴天", "#FFB74D"),       # wb_sunny
-    1: ("\ue42d", "大致晴朗", "#B0BEC5"), # wb_cloudy
-    2: ("\ue2c2", "多雲", "#90A4AE"),       # cloud
-    3: ("\ue2c2", "陰天", "#78909C"),       # cloud
-    45: ("\ue2c2", "起霧", "#B0BEC5"),      # fog / cloud
-    51: ("\ue3e5", "毛毛雨", "#4FC3F7"),    # grain
-    61: ("\ue3e5", "小雨", "#29B6F6"),       # grain
-    63: ("\ue3e5", "中雨", "#039BE5"),       # grain
-    65: ("\ue3e5", "大雨", "#0288D1"),       # grain
-    80: ("\ue3e5", "陣雨", "#29B6F6"),       # grain
-    95: ("\ue3e7", "雷雨", "#BA68C8")        # flash_on / thunderstorm
+    0: ("\ue81a", "晴天", "#FFB74D"),       # sunny
+    1: ("\ue42d", "大致晴朗", "#B0BEC5"),   # wb_cloudy
+    2: ("\ue2bd", "多雲", "#90A4AE"),       # cloud
+    3: ("\ue2bd", "陰天", "#78909C"),       # cloud
+    45: ("\ue818", "起霧", "#B0BEC5"),      # foggy
+    48: ("\ue818", "霧淞", "#B0BEC5"),      # foggy
+    51: ("\ue3ea", "微毛毛雨", "#4FC3F7"),  # grain
+    53: ("\ue3ea", "毛毛雨", "#4FC3F7"),    # grain
+    55: ("\ue3ea", "大毛毛雨", "#4FC3F7"),  # grain
+    56: ("\ueb3b", "微凍毛毛雨", "#81D4FA"),# ac_unit
+    57: ("\ueb3b", "大凍毛毛雨", "#81D4FA"),# ac_unit
+    61: ("\ue798", "小雨", "#29B6F6"),      # water_drop
+    63: ("\ue798", "中雨", "#039BE5"),      # water_drop
+    65: ("\ue798", "大雨", "#0288D1"),      # water_drop
+    66: ("\ueb3b", "微凍雨", "#4DD0E1"),    # ac_unit
+    67: ("\ueb3b", "大凍雨", "#00BCD4"),    # ac_unit
+    71: ("\ue80f", "小雪", "#E0F7FA"),      # snowing
+    73: ("\ue80f", "中雪", "#B2EBF2"),      # snowing
+    75: ("\ue80f", "大雪", "#80DEEA"),      # snowing
+    77: ("\ue80f", "雪粒", "#4DD0E1"),      # snowing
+    80: ("\ue798", "微陣雨", "#29B6F6"),    # water_drop
+    81: ("\ue798", "陣雨", "#039BE5"),      # water_drop
+    82: ("\ue798", "強陣雨", "#0288D1"),    # water_drop
+    85: ("\ue80f", "微陣雪", "#B2EBF2"),    # snowing
+    86: ("\ue80f", "強陣雪", "#80DEEA"),    # snowing
+    95: ("\uebdb", "雷雨", "#BA68C8"),      # thunderstorm
+    96: ("\uebdb", "雷雨伴冰雹", "#9C27B0"), # thunderstorm
+    99: ("\uebdb", "強雷雨伴冰雹", "#7B1FA2")# thunderstorm
 }
-
 def fetch_weather() -> list[dict]:
     """抓取設定地點的天氣，回傳包含溫度、濕度、風速等資訊的字典列表。"""
     print("Weather")
@@ -40,6 +56,8 @@ def fetch_weather() -> list[dict]:
                 },
                 timeout=5,
             )
+
+            print(resp.url)
             resp.raise_for_status()
             data = resp.json().get("current", {})
             
