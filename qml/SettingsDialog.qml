@@ -64,11 +64,13 @@ Popup {
     property int cameraIndex: 0
     property var cameraOptions: []
     property string homeLocationName: ""  // 目前儲存的位置名稱
+    property bool isLoadingCameras: false
 
     function openSettings() {
+        isLoadingCameras = true;
+        camPreview.source = "";
         backend.load_settings();
         root.open();
-        backend.test_camera(cameraIndex);
     }
 
     onClosed: {
@@ -87,6 +89,9 @@ Popup {
             weatherSearchResults = [];
             youbikeSearchResults = [];
             backend.load_home_location();
+            
+            isLoadingCameras = false;
+            backend.test_camera(cameraIndex);
         }
 
         function onPreviewFrame(b64) {
@@ -508,13 +513,24 @@ Popup {
                             backend.test_camera(cameraOptions[index]);
                         }
                     }
-                    Image {
-                        id: camPreview
+                    Item {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Math.min(220, root.height * 0.3)
-                        fillMode: Image.PreserveAspectFit
-                        cache: false
-                        source: ""
+
+                        BusyIndicator {
+                            anchors.centerIn: parent
+                            running: root.isLoadingCameras
+                            visible: root.isLoadingCameras
+                        }
+
+                        Image {
+                            id: camPreview
+                            anchors.fill: parent
+                            fillMode: Image.PreserveAspectFit
+                            cache: false
+                            source: ""
+                            visible: !root.isLoadingCameras
+                        }
                     }
                 }
             }
