@@ -88,12 +88,14 @@ def get_available_cameras() -> list[str]:
     import cv2
     index = 0
     arr = []
-    while True:
+    conError = 0
+    while conError <= 3:
         cap = cv2.VideoCapture(index)
         if not cap.read()[0]:
-            break
+            conError += 1
         else:
             arr.append(index)
+            conError = 0
         cap.release()
         index += 1
     return arr
