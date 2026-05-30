@@ -4,8 +4,7 @@
 
 ---
 ## Demo
-<video controls src="https://github.com/Kaih1825/Glance/raw/refs/heads/main/Demo.mp4" title="玄關智慧中樞"></video>
-
+https://github.com/user-attachments/assets/63dbc226-5e7f-4190-b603-d6eb58c2fb88
 ---
 
 ## 🌟 系統核心功能特點
