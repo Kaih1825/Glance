@@ -132,10 +132,7 @@ class CameraService:
                     small = cv2.resize(frame, (target_w, target_h))
                     _, buffer = cv2.imencode('.jpg', small, [cv2.IMWRITE_JPEG_QUALITY, 50])
                     b64 = base64.b64encode(buffer).decode('utf-8')
-                    try:
-                        self._state.preview_frame.emit("data:image/jpeg;base64," + b64)
-                    except RuntimeError:
-                        pass # 程式正在關閉時，C++ 物件可能已被刪除
+                    self._state.preview_frame.emit("data:image/jpeg;base64," + b64)
                     time.sleep(0.03) # 約 30 FPS
                     continue
 
