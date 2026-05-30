@@ -85,22 +85,34 @@ def set_camera_index(index: int):
 
 def get_available_cameras() -> list[str]:
     """回傳匿名的相機列表 (相機 0, 相機 1...)"""
-    count = 0
-    try:
-        from PyQt6.QtMultimedia import QMediaDevices
-        count = len(QMediaDevices.videoInputs())
-    except Exception:
-        pass
+    import cv2
+    index = 0
+    arr = []
+    while True:
+        cap = cv2.VideoCapture(index)
+        if not cap.read()[0]:
+            break
+        else:
+            arr.append(index)
+        cap.release()
+        index += 1
+    return arr
+    # count = 0
+    # try:
+    #     from PyQt6.QtMultimedia import QMediaDevices
+    #     count = len(QMediaDevices.videoInputs())
+    # except Exception:
+    #     pass
 
-    if count == 0:
-        import cv2
-        # 若 Qt 無法偵測，嘗試使用 OpenCV 實際開啟相機 0 來確認是否存在
-        cap = cv2.VideoCapture(0)
-        if cap is not None and cap.isOpened():
-            count = 1
-            cap.release()
+    # if count == 0:
+    #     import cv2
+    #     # 若 Qt 無法偵測，嘗試使用 OpenCV 實際開啟相機 0 來確認是否存在
+    #     cap = cv2.VideoCapture(0)
+    #     if cap is not None and cap.isOpened():
+    #         count = 1
+    #         cap.release()
 
-    return [f"{i}" for i in range(count)]
+    # return [f"{i}" for i in range(count)]
 
 # ── 搜尋 API ──
 def search_weather_location(query: str) -> list[dict]:
