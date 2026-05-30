@@ -501,10 +501,10 @@ Popup {
                         Layout.fillWidth: true
                         model: cameraOptions
                         enabled: cameraOptions.length > 0
-                        displayText: cameraOptions.length === 0 ? "找不到攝影機" : "相機" + currentText
+                        displayText: cameraOptions.length === 0 ? "找不到攝影機" : currentText
                         onActivated: index => {
-                            cameraIndex = cameraOptions[index];
-                            backend.test_camera(cameraOptions[index]);
+                            cameraIndex = index;
+                            backend.test_camera(index);
                         }
                     }
                     Image {

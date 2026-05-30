@@ -3,7 +3,7 @@ main.py
 玄關智慧中樞 — Entryway Smart Hub
 程式進入點：負責啟動 Qt 應用程式、初始化服務，並扮演 Python 與 QML (UI) 溝通的橋樑。
 """
-import sys
+import sys 
 import os
 
 # 隱藏 TensorFlow 與 oneDNN 的各種底層警告與提示訊息，必須在 import deepface 或 tensorflow 之前設定
