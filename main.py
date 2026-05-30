@@ -120,13 +120,16 @@ class Backend(QObject):
 
     @pyqtSlot()
     def load_settings(self):
-        """讀取目前所有設定，並傳送給 UI"""
-        self.settingsLoaded.emit(
-            settings_service.get_weather_locations(),
-            settings_service.get_youbike_stations(),
-            settings_service.get_camera_index(),
-            settings_service.get_available_cameras()
-        )
+        """讀取目前所有設定，並傳送給 UI。使用多執行緒避免掃描攝影機時卡住 UI"""
+        def _do():
+            cams = settings_service.get_available_cameras()
+            self.settingsLoaded.emit(
+                settings_service.get_weather_locations(),
+                settings_service.get_youbike_stations(),
+                settings_service.get_camera_index(),
+                cams
+            )
+        threading.Thread(target=_do, daemon=True).start()
 
     def _clean_qjsvalue(self, array):
         """將 QML 傳來的 JS 陣列安全轉換為純 Python 字典列表"""

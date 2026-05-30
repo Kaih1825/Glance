@@ -86,35 +86,35 @@ def set_camera_index(index: int):
 def get_available_cameras() -> list[str]:
     """回傳匿名的相機列表 (相機 0, 相機 1...)"""
     import cv2
+    
+    # 取得目前正在使用的相機索引
+    current_idx = get_camera_index()
+    
     index = 0
     arr = []
     conError = 0
+    
     while conError <= 3:
-        cap = cv2.VideoCapture(index)
-        if not cap.read()[0]:
-            conError += 1
-        else:
-            arr.append(index)
+        if index == current_idx:
+            # 避開目前正在背景執行緒中被讀取的相機，直接將其加入列表，避免 cap.read() 發生衝突/鎖定
+            arr.append(str(index))
             conError = 0
-        cap.release()
+        else:
+            cap = cv2.VideoCapture(index)
+            if cap is not None and cap.isOpened():
+                if cap.read()[0]:
+                    arr.append(str(index))
+                    conError = 0
+                else:
+                    conError += 1
+                cap.release()
+            else:
+                if cap is not None:
+                    cap.release()
+                conError += 1
         index += 1
+            
     return arr
-    # count = 0
-    # try:
-    #     from PyQt6.QtMultimedia import QMediaDevices
-    #     count = len(QMediaDevices.videoInputs())
-    # except Exception:
-    #     pass
-
-    # if count == 0:
-    #     import cv2
-    #     # 若 Qt 無法偵測，嘗試使用 OpenCV 實際開啟相機 0 來確認是否存在
-    #     cap = cv2.VideoCapture(0)
-    #     if cap is not None and cap.isOpened():
-    #         count = 1
-    #         cap.release()
-
-    # return [f"{i}" for i in range(count)]
 
 # ── 搜尋 API ──
 def search_weather_location(query: str) -> list[dict]:

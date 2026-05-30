@@ -82,7 +82,8 @@ Popup {
             youbikeStations = y;
             cameraIndex = cIdx;
             cameraOptions = cams;
-            camComboBox.currentIndex = cIdx;
+            var idx = cams.indexOf(cIdx.toString());
+            camComboBox.currentIndex = idx >= 0 ? idx : 0;
             weatherSearchResults = [];
             youbikeSearchResults = [];
             backend.load_home_location();
