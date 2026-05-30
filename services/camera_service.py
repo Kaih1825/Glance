@@ -81,8 +81,8 @@ class CameraService:
             while not self._stop_event.is_set():
                 # ── 逾時檢查 (閒置切換) ──
                 # 確保不論鏡頭是否故障，只要一段時間沒抓到人臉就關閉面板
-                if self._preview_idx is None and self._last_face_time > 0:
-                    if time.monotonic() - self._last_face_time >= _NO_FACE_TIMEOUT:
+                if self._preview_idx is None and self._state.mode != "idle":
+                    if self._last_face_time == 0.0 or time.monotonic() - self._last_face_time >= _NO_FACE_TIMEOUT:
                         self._last_face_time = 0.0
                         self._state.set_mode("idle")
 
@@ -145,9 +145,6 @@ class CameraService:
                     time.sleep(_LOOP_INTERVAL)
                     continue
 
-                # 畫面上有人臉，更新時間戳記
-                self._last_face_time = time.monotonic()
-
                 # 階段二：使用較耗資源的 DeepFace 進行「辨識」是誰
                 users = self._run_deepface(frame)
                 
@@ -156,7 +153,7 @@ class CameraService:
                     time.sleep(_LOOP_INTERVAL)
                     continue
                 
-                # 辨識完成後，再次更新時間戳記（避免比對耗時導致逾時計算錯誤）
+                # 辨識完成後，更新時間戳記（避免比對耗時導致逾時計算錯誤）
                 self._last_face_time = time.monotonic()
                 
                 if users:

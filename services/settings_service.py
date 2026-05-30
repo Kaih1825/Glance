@@ -86,6 +86,7 @@ def set_camera_index(index: int):
 def get_available_cameras() -> list[str]:
     """回傳匿名的相機列表 (相機 0, 相機 1...)"""
     import cv2
+    import time
     
     # 取得目前正在使用的相機索引
     current_idx = get_camera_index()
@@ -100,18 +101,28 @@ def get_available_cameras() -> list[str]:
             arr.append(str(index))
             conError = 0
         else:
-            cap = cv2.VideoCapture(index)
-            if cap is not None and cap.isOpened():
-                if cap.read()[0]:
-                    arr.append(str(index))
-                    conError = 0
-                else:
-                    conError += 1
-                cap.release()
-            else:
+            success = False
+            # 嘗試兩次：第一次失敗後會等待 0.5 秒再試第二次
+            for attempt in range(2):
+                cap = cv2.VideoCapture(index)
+                if cap is not None and cap.isOpened():
+                    if cap.read()[0]:
+                        success = True
+                        cap.release()
+                        break
+                
                 if cap is not None:
                     cap.release()
+                    
+                if attempt == 0:
+                    time.sleep(0.3)
+            
+            if success:
+                arr.append(str(index))
+                conError = 0
+            else:
                 conError += 1
+                
         index += 1
             
     return arr
