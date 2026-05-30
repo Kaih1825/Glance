@@ -9,7 +9,6 @@ dependencies = [
     "opencv-python",
     "deepface",
     "requests",
-    "aiohttp",
     "numpy",
     "tf-keras",
 ]
