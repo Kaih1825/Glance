@@ -506,7 +506,7 @@ Popup {
                         id: camComboBox
                         Layout.fillWidth: true
                         model: cameraOptions
-                        enabled: cameraOptions.length > 0
+                        enabled: !root.isLoadingCameras
                         displayText: cameraOptions.length === 0 ? "找不到攝影機" : "相機" + currentText
                         onActivated: index => {
                             cameraIndex = cameraOptions[index];
