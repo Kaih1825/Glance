@@ -86,32 +86,39 @@ def set_camera_index(index: int):
 def get_available_cameras() -> list[str]:
     """回傳匿名的相機列表 (相機 0, 相機 1...)"""
     count = 0
+    print("get")
     try:
         from PyQt6.QtMultimedia import QMediaDevices
         count = len(QMediaDevices.videoInputs())
-    except Exception:
+    except Exception as e:
+        print(e)
         pass
 
     import cv2
     available_cameras = []
-
-    if count == 0:
-        # 若 Qt 無法偵測，嘗試使用 OpenCV 實際開啟相機 0 來確認是否存在
-        cap = cv2.VideoCapture(0)
+    
+    i = 0
+    consecutive_failures = 0
+    # 當連續 3 個 index 都打不開時，我們就認定已經沒有更多相機了
+    while consecutive_failures < 3:
+        cap = cv2.VideoCapture(i)
         if cap is not None and cap.isOpened():
-            count = 1
-            cap.release()
-    else:
-        # 逐一測試每個相機索引
-        for i in range(count):
-            cap = cv2.VideoCapture(i)
-            if cap is not None and cap.isOpened():
+            # 必須讀得到真實畫面才算數
+            ret, frame = cap.read()
+            if ret and frame is not None:
                 available_cameras.append(i)
-                cap.release()
-            else:
-                # 連續找不到相機時停止搜尋
-                if i > 0 and len(available_cameras) == 0:
-                    break
+            
+            # 只要有抓到相機(不管有沒有被佔用)，就把失敗次數歸零，繼續往下找
+            consecutive_failures = 0
+            cap.release()
+        else:
+            consecutive_failures += 1
+            
+        i += 1
+        
+        # 安全機制：硬上限，防止極端情況下無限迴圈 (一般人不可能插超過 20 台相機)
+        if i > 20:
+            break
 
     return available_cameras
 

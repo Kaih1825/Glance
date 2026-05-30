@@ -93,6 +93,11 @@ class CameraService:
                         self._cap.release()
                     target_idx = self._preview_idx if self._preview_idx is not None else get_camera_index()
                     self._cap = cv2.VideoCapture(target_idx)
+                    self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+                    self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+                    actual_w = self._cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+                    actual_h = self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+                    logger.info(f"Camera #{target_idx} opened — negotiated resolution: {actual_w:.0f}x{actual_h:.0f}")
                     self._last_face_time = 0.0 # 切換相機後重設時間戳記，讓狀態重新計算
                     
                 if not self._cap or not self._cap.isOpened():
@@ -122,9 +127,8 @@ class CameraService:
                 # ── 預覽模式 ──
                 if self._preview_idx is not None:
                     import base64
-                    h, w = frame.shape[:2]
                     target_w = 320
-                    target_h = int(h * (target_w / w))
+                    target_h = int(target_w * actual_h / actual_w)
                     small = cv2.resize(frame, (target_w, target_h))
                     _, buffer = cv2.imencode('.jpg', small, [cv2.IMWRITE_JPEG_QUALITY, 50])
                     b64 = base64.b64encode(buffer).decode('utf-8')
