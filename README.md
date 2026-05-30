@@ -3,6 +3,10 @@
 「玄關智慧中樞」是一款專為家居入口（玄關）設計的智慧終端系統。透過背景相機的 OpenCV 與 DeepFace 人臉辨識技術，系統能在偵測到特定家庭成員時自動展開個人化面板，顯示該成員的行事曆（具隱私過濾），並結合即時天氣資訊與基於環境因子計算的最佳 YouBike 租借推薦，打造流暢且極具科技感的出門體驗。
 
 ---
+## Demo
+<video controls src="https://github.com/Kaih1825/Glance/raw/refs/heads/main/Demo.mp4" title="玄關智慧中樞"></video>
+
+---
 
 ## 🌟 系統核心功能特點
 
