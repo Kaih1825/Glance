@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/5ae99548-39b8-47c6-abda-864dd7906889
+
 # 🏠 玄關智慧中樞 (Entryway Smart Hub)
 
 「玄關智慧中樞」是一款專為家居入口（玄關）設計的智慧終端系統。透過背景相機的 OpenCV 與 DeepFace 人臉辨識技術，系統能在偵測到特定家庭成員時自動展開個人化面板，顯示該成員的行事曆（具隱私過濾），並結合即時天氣資訊與基於環境因子計算的最佳 YouBike 租借推薦，打造流暢且極具科技感的出門體驗。
@@ -6,6 +10,10 @@
 ## Demo
 <video src="./Demo.mp4" controls width="100%">
 </video>
+
+
+https://github.com/user-attachments/assets/dcfd0f3d-ed79-4b0b-84b0-e214c4fb5d26
+
 
 ---
 
