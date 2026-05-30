@@ -92,15 +92,28 @@ def get_available_cameras() -> list[str]:
     except Exception:
         pass
 
+    import cv2
+    available_cameras = []
+
     if count == 0:
-        import cv2
         # 若 Qt 無法偵測，嘗試使用 OpenCV 實際開啟相機 0 來確認是否存在
         cap = cv2.VideoCapture(0)
         if cap is not None and cap.isOpened():
             count = 1
             cap.release()
+    else:
+        # 逐一測試每個相機索引
+        for i in range(count):
+            cap = cv2.VideoCapture(i)
+            if cap is not None and cap.isOpened():
+                available_cameras.append(i)
+                cap.release()
+            else:
+                # 連續找不到相機時停止搜尋
+                if i > 0 and len(available_cameras) == 0:
+                    break
 
-    return [f"相機 {i}" for i in range(count)]
+    return available_cameras
 
 # ── 搜尋 API ──
 def search_weather_location(query: str) -> list[dict]:
