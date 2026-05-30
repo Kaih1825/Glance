@@ -389,4 +389,14 @@ Item {
             }
         }
     }
+    
+    Timer {
+        interval: 60000 // 1 分鐘
+        running: recommendRoot.isRightPanelOpened
+        repeat: true
+        triggeredOnStart: false
+        onTriggered: {
+            backend.fetch_recommendation();
+        }
+    }
 }

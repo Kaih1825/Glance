@@ -143,7 +143,7 @@ def fetch_recommendation(lat: float, lng: float) -> dict | None:
     else:
         stations = []
 
-    print(stations)
+    # print(stations)
     if not stations:
         return None
 

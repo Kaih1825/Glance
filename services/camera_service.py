@@ -173,14 +173,14 @@ class CameraService:
             from deepface import DeepFace
             if not [d for d in os.listdir(FACE_DB_DIR) if os.path.isdir(os.path.join(FACE_DB_DIR, d))]:
                 # 資料庫為空，只驗證是否有人臉
-                DeepFace.extract_faces(img_path=frame, detector_backend="retinaface", enforce_detection=True)
+                DeepFace.extract_faces(img_path=frame, detector_backend="retinaface", enforce_detection=False)
                 return None
             
             # 進行人臉比對，開啟防偽 (anti_spoofing) 避免照片騙過相機
             results = DeepFace.find(
                 img_path=frame, db_path=FACE_DB_DIR,
                 model_name="ArcFace", detector_backend="retinaface",
-                anti_spoofing=False, enforce_detection=True, silent=True
+                anti_spoofing=False, enforce_detection=False, silent=True
             )
 
             from services import database
@@ -234,7 +234,7 @@ class CameraService:
             # 3. 呼叫 find 強制 DeepFace 重新學習一次資料庫
             try:
                 from deepface import DeepFace
-                DeepFace.find(img_path=frame, db_path=FACE_DB_DIR, enforce_detection=True, silent=True)
+                DeepFace.find(img_path=frame, db_path=FACE_DB_DIR, enforce_detection=False, silent=True)
             except Exception:
                 pass
                 
