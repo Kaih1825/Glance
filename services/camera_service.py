@@ -176,7 +176,7 @@ class CameraService:
                 DeepFace.extract_faces(img_path=frame, detector_backend="retinaface", enforce_detection=False)
                 return None
             
-            # 進行人臉比對，開啟防偽 (anti_spoofing) 避免照片騙過相機
+            # 進行人臉比對
             results = DeepFace.find(
                 img_path=frame, db_path=FACE_DB_DIR,
                 model_name="ArcFace", detector_backend="retinaface",
