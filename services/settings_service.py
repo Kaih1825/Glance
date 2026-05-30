@@ -100,7 +100,7 @@ def get_available_cameras() -> list[str]:
             count = 1
             cap.release()
 
-    return [f"相機 {i}" for i in range(count)]
+    return [f"{i}" for i in range(count)]
 
 # ── 搜尋 API ──
 def search_weather_location(query: str) -> list[dict]:

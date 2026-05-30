@@ -279,6 +279,8 @@ class Backend(QObject):
 def main():
     # 解決 Mac 上預設樣式不允許改變按鈕顏色的問題
     os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
+    # 嘗試切換為 ffmpeg (Qt 6.6+ 支援) 或 windows
+    os.environ["QT_MEDIA_BACKEND"] = "ffmpeg"
     
     # 建立應用程式主體
     app = QGuiApplication(sys.argv)
