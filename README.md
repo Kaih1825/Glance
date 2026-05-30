@@ -49,15 +49,16 @@ https://github.com/user-attachments/assets/dcfd0f3d-ed79-4b0b-84b0-e214c4fb5d26
 ## 🗂️ 專案架構與檔案結構說明
 
 ```
-bd/ (專案根目錄)
-├── main.py                          # 🚀 程式啟動進入點（連接 Python 後端與 QML 前端）
-├── README.md                        # 📝 系統架構與流程圖手冊
-├── pyproject.toml / uv.lock         # 📦 Python 專案套件依賴與鎖定檔 (使用 uv 管理)
-├── entryway.db                      # 🗄️ SQLite 資料庫（儲存行事曆、使用者資料與系統設定）
-├── youbike_stations_cache.json      # 💾 YouBike 全局站點反查快取檔 (啟動時自動下載/更新)
-├── face_db/                         # 👤 註冊的人臉相片資料夾（依 UUID 分類儲存，內含 DeepFace 快取）
+Glance/ (專案根目錄)
+├── main.py                          # 程式啟動進入點（連接 Python 後端與 QML 前端）
+├── README.md                        # 系統架構與流程圖手冊
+├── requirements.txt                 # pip 相依套件清單
+├── pyproject.toml / uv.lock         # Python 專案套件依賴與鎖定檔 (使用 uv 管理)
+├── entryway.db                      # SQLite 資料庫（儲存行事曆、使用者資料與系統設定）
+├── youbike_stations_cache.json      # YouBike 全局站點反查快取檔 (啟動時自動下載/更新)
+├── face_db/                         # 註冊的人臉相片資料夾（依 UUID 分類儲存，內含 DeepFace 快取）
 │
-├── services/                        # ⚙️ 後端服務模組 (Backend Services)
+├── services/                        # 後端服務模組 (Backend Services)
 │   ├── __init__.py                  #     └─ 初始化定義
 │   ├── state.py                     #     └─ AppState：全域狀態與執行緒同步鎖管理
 │   ├── camera_service.py            #     └─ 背景 OpenCV 擷取與 DeepFace 人臉辨識執行緒
@@ -67,7 +68,7 @@ bd/ (專案根目錄)
 │   ├── settings_service.py          #     └─ 設定管理、OSM 城市/地點搜尋與鄰近 YouBike 檢索
 │   └── recommendation_service.py    #     └─ 智慧 YouBike 推薦演算法（綜合距離、車量、氣溫與降雨）
 │
-└── qml/                             # 🎨 前端使用者介面 (Frontend QML)
+└── qml/                             # 前端使用者介面 (Frontend QML)
     ├── main.qml                     #     └─ 主視窗與面板展開/縮放動畫控制器、毛玻璃背景模糊效果
     ├── LeftPanel.qml                #     └─ 左側常駐面板（時間與滾動的天氣、YouBike、推薦卡片）
     ├── RightPanel.qml               #     └─ 右側彈出面板（個人化行事曆與註冊按鈕）
