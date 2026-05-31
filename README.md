@@ -7,6 +7,61 @@
 
 https://github.com/user-attachments/assets/dcfd0f3d-ed79-4b0b-84b0-e214c4fb5d26
 
+---
+
+## 🚀 安裝與執行指南
+
+### 1. 系統需求
+* **作業系統**：macOS (已完美相容與測試) 或 Windows / Linux。
+* **Python 版本**：`>= 3.11`。
+* **硬體設備**：需連接 USB 攝影機，或具備內建鏡頭（macOS 支援 Continuity Camera 接續互通相機）。
+
+### 2. 安裝步驟
+
+專案推薦使用 Rust 編寫的快速 Python 套件管理器 [**uv**](https://github.com/astral-sh/uv) 進行環境管理。
+
+#### 使用 `uv` (推薦)
+1. **同步虛擬環境並安裝依賴**：
+   ```bash
+   uv sync
+   ```
+2. **執行應用程式**：
+   ```bash
+   uv run main.py
+   ```
+
+#### 使用傳統 `pip` 與虛擬環境
+1. **建立並啟動虛擬環境**：
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # macOS / Linux
+   # .venv\Scripts\activate  # Windows
+   ```
+2. **安裝依賴套件**：
+   ```bash
+   pip install -r pyproject.toml
+   # 或者手動安裝：
+   pip install PyQt6 opencv-python deepface requests aiohttp numpy tf-keras
+   ```
+3. **執行應用程式**：
+   ```bash
+   python main.py
+   ```
+
+### 3. 首次啟動與使用注意事項
+
+> [!IMPORTANT]
+> **1. macOS 權限取得**
+> 在 macOS 系統上執行時，終端機或 IDE 必須取得**「相機存取權限」**。若執行時相機畫面為黑畫面或程式閃退，請前往 `系統設定` -> `隱私權與安全性` -> `相機`，確認開啟您的終端機/編輯器權限。
+
+> [!NOTE]
+> **2. AI 模型初次下載**
+> 系統首次執行且人臉辨識啟動時，若檢測到本地無 DeepFace 權重檔，會自動在背景從網上下載 `ArcFace` 重點權重檔（約 130MB）與 `RetinaFace` 偵測權重。
+> 此時 UI 會彈出**「正在下載 AI 模型...」**的提示視窗，請保持網路連線通暢。下載完成後此對話框會自動關閉，此過程僅在首次啟動時發生。
+
+> [!TIP]
+> **3. 初始主位置設定**
+> 程式啟動後若檢測到無主位置設定，會主動跳出引導視窗。請輸入您所在的區域（例如 `台北市信義區` 或 `Taipei`），搜尋並確認座標後，系統會自動在背景將該處設為您的「家」，並自動添加附近的天氣資訊與最靠近您的 6 個 YouBike 站點至您的主面板中。
 
 ---
 
@@ -247,57 +302,3 @@ sequenceDiagram
 | **value** | TEXT | NOT NULL DEFAULT '{}' | JSON 格式的設定值內容 |
 
 ---
-
-## 🚀 安裝與執行指南
-
-### 1. 系統需求
-* **作業系統**：macOS (已完美相容與測試) 或 Windows / Linux。
-* **Python 版本**：`>= 3.11`。
-* **硬體設備**：需連接 USB 攝影機，或具備內建鏡頭（macOS 支援 Continuity Camera 接續互通相機）。
-
-### 2. 安裝步驟
-
-專案推薦使用 Rust 編寫的快速 Python 套件管理器 [**uv**](https://github.com/astral-sh/uv) 進行環境管理。
-
-#### 使用 `uv` (推薦)
-1. **同步虛擬環境並安裝依賴**：
-   ```bash
-   uv sync
-   ```
-2. **執行應用程式**：
-   ```bash
-   uv run main.py
-   ```
-
-#### 使用傳統 `pip` 與虛擬環境
-1. **建立並啟動虛擬環境**：
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # macOS / Linux
-   # .venv\Scripts\activate  # Windows
-   ```
-2. **安裝依賴套件**：
-   ```bash
-   pip install -r pyproject.toml
-   # 或者手動安裝：
-   pip install PyQt6 opencv-python deepface requests aiohttp numpy tf-keras
-   ```
-3. **執行應用程式**：
-   ```bash
-   python main.py
-   ```
-
-### 3. 首次啟動與使用注意事項
-
-> [!IMPORTANT]
-> **1. macOS 權限取得**
-> 在 macOS 系統上執行時，終端機或 IDE 必須取得**「相機存取權限」**。若執行時相機畫面為黑畫面或程式閃退，請前往 `系統設定` -> `隱私權與安全性` -> `相機`，確認開啟您的終端機/編輯器權限。
-
-> [!NOTE]
-> **2. AI 模型初次下載**
-> 系統首次執行且人臉辨識啟動時，若檢測到本地無 DeepFace 權重檔，會自動在背景從網上下載 `ArcFace` 重點權重檔（約 130MB）與 `RetinaFace` 偵測權重。
-> 此時 UI 會彈出**「正在下載 AI 模型...」**的提示視窗，請保持網路連線通暢。下載完成後此對話框會自動關閉，此過程僅在首次啟動時發生。
-
-> [!TIP]
-> **3. 初始主位置設定**
-> 程式啟動後若檢測到無主位置設定，會主動跳出引導視窗。請輸入您所在的區域（例如 `台北市信義區` 或 `Taipei`），搜尋並確認座標後，系統會自動在背景將該處設為您的「家」，並自動添加附近的天氣資訊與最靠近您的 6 個 YouBike 站點至您的主面板中。
